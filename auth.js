@@ -8,43 +8,43 @@ function showLogin() {
   document.getElementById("loginDiv").style.display = "block";
 }
 
-// Register User
+// js/auth.js
+
+// Register new user
 function register() {
   const name = document.getElementById("registerName").value;
   const email = document.getElementById("registerEmail").value;
   const password = document.getElementById("registerPassword").value;
   const role = document.getElementById("registerRole").value;
 
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(cred => {
-      return db.collection("users").doc(cred.user.uid).set({
-        name, email, role
+  firebase.auth().createUserWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      return firebase.firestore().collection("users").doc(user.uid).set({
+        name: name,
+        email: email,
+        role: role
       });
     })
     .then(() => {
-      alert("✅ Registration Successful!");
-      showLogin();
+      alert("✅ Registered successfully!");
     })
-    .catch(err => alert(err.message));
+    .catch((error) => {
+      alert("❌ Error: " + error.message);
+    });
 }
 
-// Login User
+// Login user
 function login() {
   const email = document.getElementById("loginEmail").value;
   const password = document.getElementById("loginPassword").value;
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(cred => {
-      db.collection("users").doc(cred.user.uid).get().then(doc => {
-        if (doc.exists) {
-          const role = doc.data().role;
-          if (role === "student") {
-            window.location.href = "student.html";
-          } else if (role === "admin") {
-            window.location.href = "admin.html";
-          }
-        }
-      });
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then((userCredential) => {
+      alert("✅ Login success: " + userCredential.user.email);
     })
-    .catch(err => alert(err.message));
+    .catch((error) => {
+      alert("❌ Error: " + error.message);
+    });
 }
+
