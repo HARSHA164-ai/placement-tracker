@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "placement-tracker-sheets",
+  "private_key_id": "396b8e89ac5d6669d84e403fc5ba081125be2ec1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC6MNPu/UNGu9f9\n89+HAC7LyWitxVIsIP5fN1v2e6oqEsj7jKMFt0wRsJsjX9KZS5bosxs2pt4UNTmu\nL6pk83GK6gWp3C/0/G0VVgmspQJu3lnJfBxMmuK2eKX8RMTrrEDaW3BlYgJj8neS\ncH0LLg76lok+G9hvM7R73e8UpzdZonlAkopTpt924hMTxgYs8WjXuhZSpvKvsxhN\nuPIpfPyyFRlDRjkunu/jblYCcQOltXRBPyYG4+vRZqJpkkqgA3dvAZVIb+4Sex6K\n9/0fXbfk8haLPGPcHks6nTsLs+odBFKoCK5ykxTr9CjUbfOihh7B6CgPf9kwJWE7\n5GOggfZhAgMBAAECggEADrmT2T/AVVS/xT7HO8cA7G72T1/emszVMTSQmlK3Z3Jq\n4LIDpo0TgAamjkqivirjOW4Ixe62e4SmFieA41D5dtIBNqjKRia8fcZ7J2M5aQk+\nspeVKV3KdkHeZrANntHVoy8+GVaB9+OSH0u0J/ExkBHdssLDADBnorAvm0OKNhVn\nqrmDeT8SnLxBkd9EYychjWMLnLEyvQjqbmoW358ZdOaz1BfMuEBYouYsTXys9Wyk\nJzq2Dk3QzGgKOUKIH6eBx4UGQSpzXiTWp6XABgZxu59VrluuCiXpQmKjRJG+HTAm\niBzc/fc3wGovPE74Dvi7+NQS5AA34QafxaPtLw4o/QKBgQDxUyDpedveeYCbLrTF\n6zOPYPcGW0WeRDGCHCRNlprGxv/aIrDJH9jWb6G4ZLARGOZPpR64AQc3YxZPP+UE\ngs6dae18Ar2O98PnRhKBK1rVlUHWglIN2Cz8xuLYpUPJLSmB7dQIEBoolS7QC1sf\n5Wa9whyQ3KBxAXjgyOYy0hdcdwKBgQDFg2PJ6FYyvLuYF5qMcsMyyfVX/kFNZQ2K\nkff02bakjpA/IyumFx4r3RBF6ZJl4ECeK6rQENVjwy144jfmIsGyZ+wNgeuj4N3/\nrckZky3qp8Bi68GRWA9dv79whB9KCOIwSdGdAjJOZpRd8oDnf6O0GTrinfMe0qGY\nlsSO/4tx5wKBgQDfDaXrB25ZONbNGKOQGDCFAuvwXSaA/akBCL/pUx3mQwMy/UOH\n8r66nV3OEIrIkso1rXoyOwkPga+aOoWU4M7WopUWPXY2Ef5p4tOxvn/r0FSVT8lF\n8JzMW4xLEJ4R8YNfC5MijLeQ8SrestBcL+4B0MwUfUhyixjONALJ0HQ1SwKBgF/5\nMTL5/3CV/r2vsnxOg4UZV2sTc93MnaDYvtiuNa6OS48yYtJI53M+7tpZ3bY9GokB\nBPYnR9k7DMxxd+IOv3oWP0BtAfhWmujTJCWWO7iLHNO0ZRFf7c+LDdX5jU6nNGls\nZTtaxuELvUpNPM/AWOZ5YACf6XPvu2/uysIFcFe/AoGBALyXIbEAhr0cQLfNbPDk\nFVBYM1nk0zj4dkd+R8u6OMwzIsflrgJ7gfNmEseClHSOl08LPe7REwcwxiXQZVBZ\nwhDvYTgvTnEe5Qaffx7qTp2PQjO1JM6h1zk+99Hz48ay4iAB4UzHoDyDFiKmI4Uz\n4SwjAceh2BKQa2vYjGflbYYv\n-----END PRIVATE KEY-----\n",
+  "client_email": "placement-tracker-sheets@placement-tracker-sheets.iam.gserviceaccount.com",
+  "client_id": "107338200313326754158",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/placement-tracker-sheets%40placement-tracker-sheets.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
