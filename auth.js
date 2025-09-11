@@ -99,3 +99,16 @@ function login() {
       alert("Login failed: " + error.message);
     });
 }
+
+// Logout function
+function logout() {
+  firebase.auth().signOut()
+    .then(() => {
+      // Redirect back to login page (index.html)
+      window.location.href = "index.html";
+    })
+    .catch(error => {
+      console.error("Logout error:", error);
+      alert("Logout failed: " + error.message);
+    });
+}
