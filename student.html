@@ -16,10 +16,42 @@
   </nav>
 
   <!-- Content -->
-  <div class="container mt-4">
-    <h2>Welcome, Student!</h2>
-    <p>This is your student dashboard. Here you can view your profile, applied companies, and placement updates.</p>
+ <div class="container mt-4">
+  <h2>Welcome, Student!</h2>
+  <p>This is your student dashboard. Below are your profile details:</p>
+
+  <!-- Profile Card -->
+  <div class="card shadow p-4 mt-3">
+    <h4>My Profile</h4>
+    <hr>
+    <p><strong>Name:</strong> <span id="profileName"></span></p>
+    <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+    <p><strong>Branch:</strong> <span id="profileBranch"></span></p>
+    <p><strong>Roll No:</strong> <span id="profileRoll"></span></p>
+    <p><strong>Skills:</strong> <span id="profileSkills"></span></p>
   </div>
+</div>
+
+<!-- Profile Edit Form -->
+<div class="card shadow p-4 mt-4">
+  <h4>Edit Profile</h4>
+  <hr>
+  <div class="mb-2">
+    <label class="form-label">Branch</label>
+    <input type="text" id="editBranch" class="form-control">
+  </div>
+  <div class="mb-2">
+    <label class="form-label">Roll No</label>
+    <input type="text" id="editRollNo" class="form-control">
+  </div>
+  <div class="mb-2">
+    <label class="form-label">Skills (comma separated)</label>
+    <input type="text" id="editSkills" class="form-control">
+  </div>
+  <button class="btn btn-success mt-2" onclick="updateProfile()">Save Changes</button>
+</div>
+
+
 
   <!-- Firebase + Auth -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -29,12 +61,71 @@
   <script src="auth.js"></script>
 
   <script>
-    // Auth check
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "index.html"; // not logged in
-      }
-    });
-  </script>
+  // Check auth state
+  firebase.auth().onAuthStateChanged(user => {
+    if (!user) {
+      // If no user logged in → back to login page
+      window.location.href = "index.html";
+    } else {
+      // ✅ Fetch student profile from Firestore
+      db.collection("student").doc(user.uid).get()
+        .then(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+
+            // --- Profile Card Fill ---
+            document.getElementById("profileName").innerText = data.name || "";
+            document.getElementById("profileEmail").innerText = data.email || "";
+            document.getElementById("profileBranch").innerText = data.branch || "";
+            document.getElementById("profileRoll").innerText = data.rollNo || "";
+            document.getElementById("profileSkills").innerText = data.skills ? data.skills.join(", ") : "";
+
+            // --- Edit Form Pre-fill ---
+            document.getElementById("editBranch").value = data.branch || "";
+            document.getElementById("editRollNo").value = data.rollNo || "";
+            document.getElementById("editSkills").value = data.skills ? data.skills.join(", ") : "";
+          } else {
+            alert("Profile not found in Firestore!");
+          }
+        })
+        .catch(err => {
+          console.error("Error fetching profile:", err);
+          alert("Error: " + err.message);
+        });
+    }
+  });
+
+  // ✅ Update Profile Function
+  function updateProfile() {
+    const branch = document.getElementById("editBranch").value;
+    const rollNo = document.getElementById("editRollNo").value;
+    const skills = document.getElementById("editSkills").value.split(",").map(s => s.trim());
+
+    const user = firebase.auth().currentUser;
+
+    if (user) {
+      db.collection("student").doc(user.uid).update({
+        branch: branch,
+        rollNo: rollNo,
+        skills: skills
+      })
+      .then(() => {
+        alert("Profile updated successfully!");
+
+        // Refresh profile card
+        document.getElementById("profileBranch").innerText = branch;
+        document.getElementById("profileRoll").innerText = rollNo;
+        document.getElementById("profileSkills").innerText = skills.join(", ");
+      })
+      .catch(err => {
+        console.error("Error updating profile:", err);
+        alert("Error: " + err.message);
+      });
+    } else {
+      alert("User not logged in!");
+    }
+  }
+</script>
+
 </body>
 </html>
