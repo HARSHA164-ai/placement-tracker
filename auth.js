@@ -12,11 +12,11 @@ function showLogin() {
 
 // Register new user
 function register() {
+  const name = document.getElementById("registerName").value;
   const email = document.getElementById("registerEmail").value;
   const password = document.getElementById("registerPassword").value;
-  const name = document.getElementById("registerName").value;
-  const branch = document.getElementById("registerBranch").value;
-  const rollNo = document.getElementById("registerRollNo").value;
+  const role = document.getElementById("registerRole").value;
+  ;
 
   firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(userCredential => {
