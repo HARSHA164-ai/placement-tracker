@@ -11,29 +11,43 @@ function showLogin() {
 // js/auth.js
 
 // Register new user
+// Register new user
 function register() {
   const name = document.getElementById("registerName").value;
   const email = document.getElementById("registerEmail").value;
   const password = document.getElementById("registerPassword").value;
   const role = document.getElementById("registerRole").value;
-  ;
+
+  if (!email || !password) {
+    alert("Email and password required!");
+    return;
+  }
 
   firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(userCredential => {
       const user = userCredential.user;
 
-      // Firestore lo save cheyyali
-      return db.collection("student").doc(user.uid).set({
-        name: name,
-        email: email,
-        branch: branch,
-        rollNo: rollNo,
-        role: "student"   // 👈 Default role student
-      });
+      if (role === "admin") {
+        // Save to admin collection
+        return db.collection("admin").doc(user.uid).set({
+          name: name,
+          email: email,
+          role: "admin"
+        });
+      } else {
+        // Save to student collection
+        return db.collection("student").doc(user.uid).set({
+          name: name,
+          email: email,
+          role: "student"
+        });
+      }
     })
     .then(() => {
       alert("Registration successful! Please login.");
-      // Login modal open cheyyachu or redirect
+      document.getElementById("registerName").value = "";
+      document.getElementById("registerEmail").value = "";
+      document.getElementById("registerPassword").value = "";
     })
     .catch(error => {
       console.error(error.message);
