@@ -12,38 +12,35 @@ function showLogin() {
 
 // Register new user
 function register() {
-  const name = document.getElementById("registerName").value;
   const email = document.getElementById("registerEmail").value;
   const password = document.getElementById("registerPassword").value;
-  const role = document.getElementById("registerRole").value;
-
-  if (!email || !password) {
-    alert("Email and password are required!");
-    return;
-  }
-  if (password.length < 6) {
-    alert("Password must be at least 6 characters");
-    return;
-  }
+  const name = document.getElementById("registerName").value;
+  const branch = document.getElementById("registerBranch").value;
+  const rollNo = document.getElementById("registerRollNo").value;
 
   firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(userCredential => {
       const user = userCredential.user;
-      return db.collection("users").doc(user.uid).set({
-        name,
-        email,
-        role
+
+      // Firestore lo save cheyyali
+      return db.collection("student").doc(user.uid).set({
+        name: name,
+        email: email,
+        branch: branch,
+        rollNo: rollNo,
+        role: "student"   // 👈 Default role student
       });
     })
     .then(() => {
-      alert("Registration successful!");
-      window.location.href = "dashboard.html"; // 👈 next page redirect
+      alert("Registration successful! Please login.");
+      // Login modal open cheyyachu or redirect
     })
     .catch(error => {
       console.error(error.message);
-      alert("Error: " + error.message);
+      alert("Registration failed: " + error.message);
     });
 }
+
 
 
 // Login user
@@ -55,24 +52,32 @@ function login() {
     .then(userCredential => {
       const user = userCredential.user;
 
-      // Firestore nundi user role fetch cheyyali
-      db.collection("users").doc(user.uid).get()
+      // First check in admin collection
+      db.collection("admin").doc(user.uid).get()
         .then(doc => {
-          if (doc.exists) {
-            const role = doc.data().role;
-
-            if (role === "admin") {
-              window.location.href = "admin.html";   // 👈 Admin page
-            } else {
-              window.location.href = "student.html"; // 👈 Student page
-            }
+          if (doc.exists && doc.data().role === "admin") {
+            alert("Welcome Admin!");
+            window.location.href = "admin.html";  // 👈 Redirect to Admin page
           } else {
-            alert("No role found for this user!");
+            // If not admin, check student collection
+            db.collection("student").doc(user.uid).get()
+              .then(doc2 => {
+                if (doc2.exists && doc2.data().role === "student") {
+                  alert("Welcome Student!");
+                  window.location.href = "student.html"; // 👈 Redirect to Student page
+                } else {
+                  alert("Error: No role assigned. Contact Admin.");
+                }
+              })
+              .catch(err => {
+                console.error("Error fetching student role:", err);
+                alert("Error fetching student role: " + err.message);
+              });
           }
         })
-        .catch(error => {
-          console.error("Error fetching role:", error);
-          alert("Error fetching role: " + error.message);
+        .catch(err => {
+          console.error("Error fetching admin role:", err);
+          alert("Error fetching admin role: " + err.message);
         });
     })
     .catch(error => {
