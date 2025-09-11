@@ -33,6 +33,13 @@
     </table>
   </div>
 
+  <div class="mt-4">
+    <h4>Google Sheets Integration</h4>
+    <button class="btn btn-primary" onclick="exportStudents()">Export Students to Google Sheets</button>
+    <button class="btn btn-success" onclick="importStudents()">Import Students from Google Sheets</button>
+  </div>
+
+
   <div class="container mt-5">
     <h2>Companies</h2>
     <button class="btn btn-success mb-2" data-bs-toggle="modal" data-bs-target="#addCompanyModal">+ Add Company</button>
@@ -226,6 +233,33 @@
     window.onload = () => {
       loadCompanies();
     };
+
+    // Apps Script Web App URL (mee deployment URL replace cheyyi)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9cbrhY4QSGh_pRjBMjOGWd6Zh5U8YNiVc09rvNRQ7srJCoVMblfKKPZqH3V3gWHLhrg/exec";
+
+    // Export students to Google Sheets
+    function exportStudents() {
+      fetch(`${SCRIPT_URL}?action=export`)
+        .then(res => res.text())
+        .then(data => {
+          alert("Export Successful! Check Google Sheets.");
+          console.log(data);
+        })
+        .catch(err => alert("Error: " + err.message));
+    }
+
+    // Import students from Google Sheets
+    function importStudents() {
+      fetch(`${SCRIPT_URL}?action=import`)
+        .then(res => res.json())
+        .then(data => {
+          data.forEach(student => {
+            db.collection("student").doc(student.id).set(student, { merge: true });
+          });
+          alert("Import Successful! Firestore updated.");
+        })
+        .catch(err => alert("Error: " + err.message));
+    }
 
   </script>
 
