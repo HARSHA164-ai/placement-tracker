@@ -116,3 +116,80 @@ function addCompany() {
 
     }).catch(err => alert(err.message));
 }
+
+db.collection("student").get()
+  .then(snapshot => {
+    let tableBody = document.getElementById("studentTable");
+    tableBody.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const id = doc.id; // student UID
+
+      let row = `
+        <tr>
+          <td>${data.name || ""}</td>
+          <td>${data.email || ""}</td>
+          <td>${data.branch || ""}</td>
+          <td>${data.rollNo || ""}</td>
+          <td>${data.skills ? data.skills.join(", ") : ""}</td>
+          <td>
+            <button class="btn btn-sm btn-warning" onclick="editStudent('${id}')">Edit</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteStudent('${id}')">Delete</button>
+          </td>
+        </tr>
+      `;
+      tableBody.innerHTML += row;
+    });
+  })
+
+  function deleteStudent(id) {
+  if (confirm("Are you sure you want to delete this student?")) {
+    db.collection("student").doc(id).delete()
+      .then(() => {
+        alert("Student deleted successfully!");
+        location.reload(); // refresh table
+      })
+      .catch(err => {
+        console.error("Error deleting student:", err);
+        alert("Error: " + err.message);
+      });
+  }
+}
+
+
+  // 👇 Add this here
+  let currentEditId = null;
+
+function editStudent(id) {
+  db.collection("student").doc(id).get()
+    .then(doc => {
+      if (doc.exists) {
+        const data = doc.data();
+
+        const newBranch = prompt("Enter new branch:", data.branch || "");
+        const newRollNo = prompt("Enter new roll no:", data.rollNo || "");
+        const newSkills = prompt("Enter skills (comma separated):", data.skills ? data.skills.join(", ") : "");
+
+        if (newBranch !== null && newRollNo !== null && newSkills !== null) {
+          db.collection("student").doc(id).update({
+            branch: newBranch,
+            rollNo: newRollNo,
+            skills: newSkills.split(",").map(s => s.trim())
+          })
+          .then(() => {
+            alert("Student updated successfully!");
+            location.reload();
+          })
+          .catch(err => {
+            console.error("Error updating student:", err);
+            alert("Error: " + err.message);
+          });
+        }
+      }
+    })
+    .catch(err => {
+      console.error("Error fetching student for edit:", err);
+      alert("Error: " + err.message);
+    });
+}
