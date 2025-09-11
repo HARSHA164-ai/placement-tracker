@@ -70,17 +70,17 @@ function login() {
       db.collection("admin").doc(user.uid).get()
         .then(doc => {
           if (doc.exists && doc.data().role === "admin") {
-            alert("Welcome Admin!");
-            window.location.href = "admin.html";  // 👈 Redirect to Admin page
+            // Redirect Admin
+            window.location.href = "admin.html";
           } else {
-            // If not admin, check student collection
+            // Otherwise check student collection
             db.collection("student").doc(user.uid).get()
               .then(doc2 => {
                 if (doc2.exists && doc2.data().role === "student") {
-                  alert("Welcome Student!");
-                  window.location.href = "student.html"; // 👈 Redirect to Student page
+                  // Redirect Student
+                  window.location.href = "student.html";
                 } else {
-                  alert("Error: No role assigned. Contact Admin.");
+                  alert("No role assigned. Contact Admin.");
                 }
               })
               .catch(err => {
@@ -99,6 +99,3 @@ function login() {
       alert("Login failed: " + error.message);
     });
 }
-
-
-
