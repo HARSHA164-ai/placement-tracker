@@ -7,6 +7,12 @@ function showLogin() {
   document.getElementById("registerDiv").style.display = "none";
   document.getElementById("loginDiv").style.display = "block";
 }
+function showLoader() {
+  document.getElementById("loader").style.display = "flex";
+}
+function hideLoader() {
+  document.getElementById("loader").style.display = "none";
+}
 
 // js/auth.js
 
@@ -23,34 +29,27 @@ function register() {
     return;
   }
 
+  showLoader(); // ⏳ show loader
+
   firebase.auth().createUserWithEmailAndPassword(email, password)
     .then(userCredential => {
       const user = userCredential.user;
-
-      if (role === "admin") {
-        // Save to admin collection
-        return db.collection("admin").doc(user.uid).set({
-          name: name,
-          email: email,
-          role: "admin"
-        });
-      } else {
-        // Save to student collection
-        return db.collection("student").doc(user.uid).set({
-          name: name,
-          email: email,
-          role: "student"
-        });
-      }
+      return db.collection("users").doc(user.uid).set({
+        name: name,
+        email: email,
+        role: role,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
     })
     .then(() => {
+      hideLoader(); // ✅ hide loader
       alert("Registration successful! Please login.");
       document.getElementById("registerName").value = "";
       document.getElementById("registerEmail").value = "";
       document.getElementById("registerPassword").value = "";
     })
     .catch(error => {
-      console.error(error.message);
+      hideLoader(); // ❌ hide loader
       alert("Registration failed: " + error.message);
     });
 }
@@ -62,43 +61,35 @@ function login() {
   const email = document.getElementById("loginEmail").value;
   const password = document.getElementById("loginPassword").value;
 
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(userCredential => {
-      const user = userCredential.user;
+  showLoader(); // ⏳ show loader
 
-      // First check in admin collection
-      db.collection("admin").doc(user.uid).get()
-        .then(doc => {
-          if (doc.exists && doc.data().role === "admin") {
-            // Redirect Admin
-            window.location.href = "admin.html";
-          } else {
-            // Otherwise check student collection
-            db.collection("student").doc(user.uid).get()
-              .then(doc2 => {
-                if (doc2.exists && doc2.data().role === "student") {
-                  // Redirect Student
-                  window.location.href = "student.html";
-                } else {
-                  alert("No role assigned. Contact Admin.");
-                }
-              })
-              .catch(err => {
-                console.error("Error fetching student role:", err);
-                alert("Error fetching student role: " + err.message);
-              });
-          }
-        })
-        .catch(err => {
-          console.error("Error fetching admin role:", err);
-          alert("Error fetching admin role: " + err.message);
-        });
+  firebase.auth().signInWithEmailAndPassword(email, password)
+    .then(async (userCredential) => {
+      const user = userCredential.user;
+      const doc = await db.collection("users").doc(user.uid).get();
+
+      hideLoader(); // ✅ hide loader
+
+      if (!doc.exists) {
+        alert("⚠ No role assigned. Contact Admin.");
+        return;
+      }
+
+      const role = doc.data().role;
+      if (role === "admin") {
+        window.location.href = "admin.html";
+      } else if (role === "student") {
+        window.location.href = "student.html";
+      } else {
+        alert("⚠ Invalid role detected!");
+      }
     })
     .catch(error => {
-      console.error(error.message);
+      hideLoader(); // ❌ hide loader
       alert("Login failed: " + error.message);
     });
 }
+
 
 // Logout function
 function logout() {
