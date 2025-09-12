@@ -193,3 +193,16 @@ function editStudent(id) {
       alert("Error: " + err.message);
     });
 }
+
+function exportStudents() {
+  fetch("YOUR_APPS_SCRIPT_WEBAPP_URL?type=exportStudents")
+    .then(res => res.text())
+    .then(data => {
+      alert("✅ " + data);
+    })
+    .catch(err => {
+      console.error(err);
+      alert("❌ Export failed: " + err.message);
+    });
+}
+
