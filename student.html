@@ -188,7 +188,7 @@
       db.collection("applications").add({
         companyId,
         studentId,
-        status: "Applied",
+        status: "Pending",
         appliedAt: new Date()
       }).then(() => {
         alert("✅ Application submitted successfully!");
