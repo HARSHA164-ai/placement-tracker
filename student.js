@@ -1,4 +1,5 @@
 // Check if user logged in
+/*
 auth.onAuthStateChanged(user => {
   if (!user) {
     window.location.href = "index.html";
@@ -68,3 +69,4 @@ function logout() {
     window.location.href = "index.html";
   });
 }
+*/

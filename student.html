@@ -40,6 +40,23 @@
     <div class="row" id="companyList"></div>
   </div>
 
+  <!-- Student Applications Section -->
+<h3 class="mt-5 mb-3">📩 My Applications</h3>
+<div class="table-responsive">
+  <table class="table table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Company</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th>Applied At</th>
+      </tr>
+    </thead>
+    <tbody id="applicationsTable"></tbody>
+  </table>
+</div>
+
+
   <!-- 🔹 Bootstrap Modal for Edit Profile -->
   <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -175,6 +192,46 @@
         alert("✅ Application submitted successfully!");
       }).catch(err => alert(err.message));
     }
+
+    // Load Student Applications
+function loadApplications(studentId) {
+  const appsTable = document.getElementById("applicationsTable");
+  appsTable.innerHTML = `<tr><td colspan="4" class="text-center">Loading applications...</td></tr>`;
+
+  db.collection("applications")
+    .where("studentId", "==", studentId)
+    .orderBy("appliedAt", "desc")
+    .onSnapshot(async (snapshot) => {
+      if (snapshot.empty) {
+        appsTable.innerHTML = `<tr><td colspan="4" class="text-center">No applications yet.</td></tr>`;
+        return;
+      }
+
+      appsTable.innerHTML = "";
+      for (const appDoc of snapshot.docs) {
+        const app = appDoc.data();
+        const companyDoc = await db.collection("companies").doc(app.companyId).get();
+        const company = companyDoc.exists ? companyDoc.data() : { name: "Unknown", role: "" };
+
+        appsTable.innerHTML += `
+          <tr>
+            <td>${company.name}</td>
+            <td>${company.role}</td>
+            <td>
+              <span class="badge 
+                ${app.status === "Pending" ? "bg-warning text-dark" : 
+                  app.status === "Shortlisted" ? "bg-info text-dark" : 
+                  "bg-success"}">
+                ${app.status}
+              </span>
+            </td>
+            <td>${app.appliedAt.toDate().toLocaleString()}</td>
+          </tr>
+        `;
+      }
+    });
+}
+
 
     // 🔹 Logout
     function logout() {
