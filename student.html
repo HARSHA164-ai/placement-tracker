@@ -40,6 +40,11 @@
     <div class="row" id="companyList"></div>
   </div>
 
+  <button class="btn btn-primary w-100" onclick="applyJob('${doc.id}')">
+  Apply Now
+</button>
+
+
   <!-- Student Applications Section -->
   <h3 class="mt-5 mb-3">📩 My Applications</h3>
   <div class="table-responsive">
@@ -184,16 +189,20 @@
 
 
     // 🔹 Apply to Company
-    function applyJob(companyId, studentId) {
+    function applyJob(companyId) {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("You must be logged in!");
+
       db.collection("applications").add({
         companyId,
-        studentId,
+        studentId: user.uid,   // ✅ Always match auth.uid
         status: "Pending",
-        appliedAt: new Date()
+        appliedAt: firebase.firestore.FieldValue.serverTimestamp() // ✅ server time better
       }).then(() => {
         alert("✅ Application submitted successfully!");
       }).catch(err => alert(err.message));
     }
+
 
     // Load Student Applications
     function loadApplications(studentId) {
