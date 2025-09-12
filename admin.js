@@ -1,5 +1,5 @@
 // Check if admin logged in
-auth.onAuthStateChanged(user => {
+/*auth.onAuthStateChanged(user => {
     if (!user) {
         window.location.href = "index.html";
     } else {
@@ -205,4 +205,4 @@ function exportStudents() {
       alert("❌ Export failed: " + err.message);
     });
 }
-
+*/

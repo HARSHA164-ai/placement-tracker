@@ -163,27 +163,44 @@
     }
 
     // 🔹 Load Applications
-    async function loadApplications() {
-      const appsTable = document.getElementById("applicationsTable");
-      appsTable.innerHTML = "";
-      const apps = await db.collection("applications").orderBy("appliedAt", "desc").get();
+    // 🔹 Load Applications with Status Update Option
+async function loadApplications() {
+  const appsTable = document.getElementById("applicationsTable");
+  appsTable.innerHTML = "";
+  const apps = await db.collection("applications").orderBy("appliedAt", "desc").get();
 
-      for (const appDoc of apps.docs) {
-        const app = appDoc.data();
-        const student = await db.collection("student").doc(app.studentId).get();
-        const company = await db.collection("companies").doc(app.companyId).get();
+  for (const appDoc of apps.docs) {
+    const app = appDoc.data();
+    const appId = appDoc.id;
+    const student = await db.collection("student").doc(app.studentId).get();
+    const company = await db.collection("companies").doc(app.companyId).get();
 
-        appsTable.innerHTML += `
-          <tr>
-            <td>${student.exists ? student.data().name : "Unknown"}</td>
-            <td>${company.exists ? company.data().name : "Unknown"}</td>
-            <td>${company.exists ? company.data().role : ""}</td>
-            <td>${app.status}</td>
-            <td>${app.appliedAt.toDate().toLocaleString()}</td>
-          </tr>
-        `;
-      }
-    }
+    appsTable.innerHTML += `
+      <tr>
+        <td>${student.exists ? student.data().name : "Unknown"}</td>
+        <td>${company.exists ? company.data().name : "Unknown"}</td>
+        <td>${company.exists ? company.data().role : ""}</td>
+        <td>
+          <select class="form-select form-select-sm" onchange="updateStatus('${appId}', this.value)">
+            <option value="Pending" ${app.status === "Pending" ? "selected" : ""}>Pending</option>
+            <option value="Shortlisted" ${app.status === "Shortlisted" ? "selected" : ""}>Shortlisted</option>
+            <option value="Selected" ${app.status === "Selected" ? "selected" : ""}>Selected</option>
+          </select>
+        </td>
+        <td>${app.appliedAt.toDate().toLocaleString()}</td>
+      </tr>
+    `;
+  }
+}
+
+// 🔹 Update Status in Firestore
+function updateStatus(appId, newStatus) {
+  db.collection("applications").doc(appId).update({ status: newStatus })
+    .then(() => {
+      console.log("✅ Status updated to", newStatus);
+    })
+    .catch(err => alert("❌ Error: " + err.message));
+}
 
     // 🔹 Add Company
     function addCompany() {
