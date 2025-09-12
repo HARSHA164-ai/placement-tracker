@@ -129,30 +129,40 @@
 
     // 🔹 Load Companies
     function loadCompanies(studentId) {
-      const companyList = document.getElementById("companyList");
-      db.collection("companies").get().then(snapshot => {
-        companyList.innerHTML = "";
-        snapshot.forEach(doc => {
-          const company = doc.data();
-          companyList.innerHTML += `
-            <div class="col-md-4 mb-3">
-              <div class="card shadow-sm h-100">
-                <div class="card-body">
-                  <h5 class="card-title">${company.name}</h5>
-                  <p class="card-text">
-                    <strong>Role:</strong> ${company.role}<br>
-                    <strong>Package:</strong> ${company.package}
-                  </p>
-                  <button class="btn btn-primary w-100" onclick="applyJob('${doc.id}', '${studentId}')">
-                    Apply Now
-                  </button>
-                </div>
+  const companyList = document.getElementById("companyList");
+  companyList.innerHTML = `<div class="text-center my-5">Loading companies...</div>`;
+  db.collection("companies").get().then(snapshot => {
+    if (snapshot.empty) {
+      companyList.innerHTML = `<div class="text-center my-5">No companies available right now.</div>`;
+      return;
+    }
+    companyList.innerHTML = "";
+    snapshot.forEach(doc => {
+      const company = doc.data();
+      companyList.innerHTML += `
+        <div class="col-sm-6 col-md-4 mb-4">
+          <div class="card shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">${company.name}</h5>
+              <p class="card-text">
+                <strong>Role:</strong> ${company.role}<br>
+                <strong>Package:</strong> ${company.package}
+              </p>
+              <div class="mt-auto">
+                <button class="btn btn-primary w-100" onclick="applyJob('${doc.id}', '${studentId}')" >
+                  Apply Now
+                </button>
               </div>
             </div>
-          `;
-        });
-      });
-    }
+          </div>
+        </div>
+      `;
+    });
+  }).catch(err => {
+    companyList.innerHTML = `<div class="text-center my-5 text-danger">Error loading companies: ${err.message}</div>`;
+  });
+}
+
 
     // 🔹 Apply to Company
     function applyJob(companyId, studentId) {
