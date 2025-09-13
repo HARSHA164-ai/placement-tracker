@@ -24,11 +24,12 @@ header h2 {
 }
 
 header #logoutBtn {
-    align-items: left;
+    align-items: end;
     background: #fff;
+    background-size: auto;
     color: #0066ff;
     font-size: 14px;
-    width: 25px;
+    width: 30px;
     padding: 8px 16px;
     border-radius: 20px;
     border: none;
