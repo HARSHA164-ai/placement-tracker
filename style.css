@@ -24,7 +24,7 @@ header h2 {
 }
 
 header #logoutBtn {
-    align-content: flex-end;
+    align-content: right;
     align-items: right;
     background: #fff;
     background-size: auto;
