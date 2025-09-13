@@ -14,8 +14,11 @@ function renderCompanies(userId) {
     snapshot.forEach(docSnap => {
       const data = docSnap.data();
       const div = document.createElement('div');
+      div.classList.add('company-card');
       div.innerHTML = `
-        <strong>${data.name}</strong> - ${data.role} - ${data.ctc}
+        <div class="company-info">
+          <strong>${data.name}</strong> - ${data.role} - ${data.ctc}
+        </div>
         <button data-id="${docSnap.id}" class="applyBtn">Apply</button>
       `;
       companiesList.appendChild(div);
@@ -46,10 +49,10 @@ function getStatusBadge(status) {
   else if (status === 'selected') color = 'green';
   else if (status === 'rejected') color = 'red';
 
-  return `<span style="padding:2px 6px; border-radius:4px; color:white; background:${color}; font-size:12px;">${status}</span>`;
+  return `<span style="padding:4px 10px; border-radius:12px; color:white; background:${color}; font-size:12px;">${status}</span>`;
 }
 
-// Show My Applications with company name instead of ID
+// Show My Applications with company name and status badge
 const applicationsList = document.getElementById('applicationsList');
 function renderApplications(userId) {
   const q = query(collection(db, 'applications'), where('user', '==', userId));
@@ -69,7 +72,13 @@ function renderApplications(userId) {
         console.error('Error fetching company details', e);
       }
       const div = document.createElement('div');
-      div.textContent = `${companyName} → ${data.status}`;
+      div.classList.add('application-card');
+      div.innerHTML = `
+        <div class="application-info">
+          <span class="company-title">${companyName}</span>
+          <span class="status-badge">${getStatusBadge(data.status)}</span>
+        </div>
+      `;
       applicationsList.appendChild(div);
     }
   });
