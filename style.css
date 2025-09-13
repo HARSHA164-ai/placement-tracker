@@ -15,20 +15,43 @@ header {
     color: #fff;
     font-size: 20px;
     font-weight: bold;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+header h2 {
+    margin: 0;
+}
+
+header #logoutBtn {
+    background: #fff;
+    color: #0066ff;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+header #logoutBtn:hover {
+    background: #f4f4f4;
+    color: #532a9c;
 }
 
 .card {
     background: #fff;
-    padding: 24px;
+    padding: 32px;
     margin: 40px auto;
-    max-width: 420px;
+    max-width: 800px;
+    /* Wider cards */
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    text-align: left;
+    /* Left-aligned content */
 }
 
-h2 {
+h2,
+h3 {
     margin-bottom: 20px;
     color: #333;
 }
@@ -38,7 +61,7 @@ select,
 button {
     display: block;
     width: 100%;
-    margin: 10px 0;
+    margin: 12px 0;
     padding: 12px;
     font-size: 14px;
     border-radius: 6px;
@@ -64,15 +87,15 @@ button:hover {
     margin-top: 20px;
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .app-table th,
 .app-table td {
     border: 1px solid #eee;
-    padding: 12px;
+    padding: 14px;
     text-align: left;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .app-table th {
@@ -97,11 +120,25 @@ button:hover {
     text-transform: capitalize;
 }
 
-.status-applied { background: #2196f3; }
-.status-shortlisted { background: #ff9800; }
-.status-interview { background: #9c27b0; }
-.status-selected { background: #4caf50; }
-.status-rejected { background: #f44336; }
+.status-applied {
+    background: #2196f3;
+}
+
+.status-shortlisted {
+    background: #ff9800;
+}
+
+.status-interview {
+    background: #9c27b0;
+}
+
+.status-selected {
+    background: #4caf50;
+}
+
+.status-rejected {
+    background: #f44336;
+}
 
 p a {
     color: #0066ff;
