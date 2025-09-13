@@ -37,6 +37,18 @@ function attachApplyActions(userId) {
   });
 }
 
+// Helper to style status with color badge
+function getStatusBadge(status) {
+  let color = 'gray';
+  if (status === 'applied') color = 'blue';
+  else if (status === 'shortlisted') color = 'orange';
+  else if (status === 'interview') color = 'purple';
+  else if (status === 'selected') color = 'green';
+  else if (status === 'rejected') color = 'red';
+
+  return `<span style="padding:2px 6px; border-radius:4px; color:white; background:${color}; font-size:12px;">${status}</span>`;
+}
+
 // Show My Applications with company name instead of ID
 const applicationsList = document.getElementById('applicationsList');
 function renderApplications(userId) {
