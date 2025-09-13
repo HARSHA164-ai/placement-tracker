@@ -3,7 +3,7 @@ import { signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
+if (logoutBtn) logoutBtn.addEventListener('click', () => window.location.href = 'admin.html');
 
 // Add Company
 const companyForm = document.getElementById('companyForm');
