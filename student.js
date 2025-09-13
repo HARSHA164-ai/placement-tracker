@@ -4,33 +4,32 @@ import { collection, addDoc, onSnapshot, query, where, doc, getDoc } from "https
 
 // Logout
 const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) logoutBtn.addEventListener('click', () => window.location.href = 'index.html');
+if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
 
 // Show Companies with Apply button
 const companiesList = document.getElementById('companiesList');
-function renderCompanies(userId) {
-  onSnapshot(collection(db, 'companies'), (snapshot) => {
+function renderCompanies(userId){
+  onSnapshot(collection(db,'companies'), (snapshot) => {
     companiesList.innerHTML = '';
     snapshot.forEach(docSnap => {
       const data = docSnap.data();
-      const div = document.createElement('div');
-      div.classList.add('company-card');
-      div.innerHTML = `
-        <div class="company-info">
-          <strong>${data.name}</strong> - ${data.role} - ${data.ctc}
-        </div>
-        <button data-id="${docSnap.id}" class="applyBtn">Apply</button>
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${data.name}</td>
+        <td>${data.role}</td>
+        <td>${data.ctc}</td>
+        <td><button data-id="${docSnap.id}" class="applyBtn">Apply</button></td>
       `;
-      companiesList.appendChild(div);
+      companiesList.appendChild(row);
     });
     attachApplyActions(userId);
   });
 }
 
-function attachApplyActions(userId) {
+function attachApplyActions(userId){
   document.querySelectorAll('.applyBtn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      await addDoc(collection(db, 'applications'), {
+    btn.addEventListener('click', async ()=>{
+      await addDoc(collection(db,'applications'), {
         user: userId,
         company: btn.dataset.id,
         status: 'applied'
@@ -41,52 +40,52 @@ function attachApplyActions(userId) {
 }
 
 // Helper to style status with color badge
-function getStatusBadge(status) {
+function getStatusBadge(status){
   let color = 'gray';
-  if (status === 'applied') color = 'blue';
-  else if (status === 'shortlisted') color = 'orange';
-  else if (status === 'interview') color = 'purple';
-  else if (status === 'selected') color = 'green';
-  else if (status === 'rejected') color = 'red';
+  if(status === 'applied') color = 'blue';
+  else if(status === 'shortlisted') color = 'orange';
+  else if(status === 'interview') color = 'purple';
+  else if(status === 'selected') color = 'green';
+  else if(status === 'rejected') color = 'red';
 
   return `<span style="padding:4px 10px; border-radius:12px; color:white; background:${color}; font-size:12px;">${status}</span>`;
 }
 
-// Show My Applications with company name and status badge
+// Show My Applications in table format
 const applicationsList = document.getElementById('applicationsList');
-function renderApplications(userId) {
-  const q = query(collection(db, 'applications'), where('user', '==', userId));
+function renderApplications(userId){
+  const q = query(collection(db,'applications'), where('user','==', userId));
   onSnapshot(q, async (snapshot) => {
-    applicationsList.innerHTML = '';
+    applicationsList.innerHTML = '<table class="app-table"><thead><tr><th>Company</th><th>Role</th><th>CTC</th><th>Status</th></tr></thead><tbody></tbody></table>';
+    const tbody = applicationsList.querySelector('tbody');
+
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data();
-      let companyName = data.company;
+      let cData = { name: data.company, role: '', ctc: '' };
       try {
         const companyRef = doc(db, 'companies', data.company);
         const companyDoc = await getDoc(companyRef);
-        if (companyDoc.exists()) {
-          const cData = companyDoc.data();
-          companyName = `${cData.name} - ${cData.role} - ${cData.ctc}`;
+        if(companyDoc.exists()){
+          cData = companyDoc.data();
         }
       } catch (e) {
         console.error('Error fetching company details', e);
       }
-      const div = document.createElement('div');
-      div.classList.add('application-card');
-      div.innerHTML = `
-        <div class="application-info">
-          <span class="company-title">${companyName}</span>
-          <span class="status-badge">${getStatusBadge(data.status)}</span>
-        </div>
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${cData.name}</td>
+        <td>${cData.role}</td>
+        <td>${cData.ctc}</td>
+        <td>${getStatusBadge(data.status)}</td>
       `;
-      applicationsList.appendChild(div);
+      tbody.appendChild(row);
     }
   });
 }
 
 // Auth state listener
 onAuthStateChanged(auth, (user) => {
-  if (user) {
+  if(user){
     renderCompanies(user.uid);
     renderApplications(user.uid);
   }

@@ -43,3 +43,37 @@ header {
     background: #007bff;
     color: #fff;
 }
+
+.app-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.app-table th,
+.app-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.app-table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+
+.app-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.app-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+}
