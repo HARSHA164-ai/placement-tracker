@@ -1,5 +1,5 @@
 import { auth, db } from './firebase-config.js';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // Register
@@ -15,12 +15,12 @@ if (regForm) {
       const userCred = await createUserWithEmailAndPassword(auth, email, pass);
       await setDoc(doc(db, 'users', userCred.user.uid), { name, email, role });
       alert('Account created! Please login.');
-    } catch(err) { alert(err.message); }
+      window.location.href = 'index.html';
+    } catch (err) { alert(err.message); }
   });
 }
 
-//login
-
+// Login
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
@@ -30,11 +30,11 @@ if (loginForm) {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, pass);
       const userDoc = await getDoc(doc(db, 'users', userCred.user.uid));
-      if(userDoc.exists()) {
+      if (userDoc.exists()) {
         const role = userDoc.data().role;
         if (role === 'admin') window.location.href = 'admin.html';
         else window.location.href = 'student.html';
       }
-    } catch(err) { alert(err.message); }
+    } catch (err) { alert(err.message); }
   });
 }
