@@ -1,17 +1,36 @@
 body {
-    font-family: sans-serif;
+    font-family: 'Segoe UI', sans-serif;
     margin: 0;
     padding: 0;
-    background: #f4f4f4;
+    background: #f7f9fc;
+    color: #333;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    background: linear-gradient(90deg, #0066ff, #673ab7);
+    color: #fff;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .card {
     background: #fff;
-    padding: 16px;
-    margin: 12px auto;
-    max-width: 600px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    margin: 40px auto;
+    max-width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: #333;
 }
 
 input,
@@ -19,61 +38,76 @@ select,
 button {
     display: block;
     width: 100%;
-    margin: 8px 0;
-    padding: 8px;
+    margin: 10px 0;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
 }
 
 button {
-    background: #007bff;
+    background: linear-gradient(90deg, #0066ff, #673ab7);
     color: #fff;
+    font-weight: bold;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
+    transition: 0.3s;
 }
 
 button:hover {
-    background: #0056b3;
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    background: #007bff;
-    color: #fff;
+    background: linear-gradient(90deg, #0050cc, #532a9c);
 }
 
 .app-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 20px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .app-table th,
 .app-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
+    border: 1px solid #eee;
+    padding: 12px;
     text-align: left;
+    font-size: 14px;
 }
 
 .app-table th {
-    background-color: #f4f4f4;
+    background: #f0f0f7;
     font-weight: bold;
 }
 
 .app-table tr:nth-child(even) {
-    background-color: #f9f9f9;
+    background-color: #fafafa;
 }
 
 .app-table tr:hover {
-    background-color: #f1f1f1;
+    background-color: #f1f5ff;
 }
 
 .status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    color: #fff;
     font-size: 12px;
     font-weight: bold;
+    text-transform: capitalize;
+}
+
+.status-applied { background: #2196f3; }
+.status-shortlisted { background: #ff9800; }
+.status-interview { background: #9c27b0; }
+.status-selected { background: #4caf50; }
+.status-rejected { background: #f44336; }
+
+p a {
+    color: #0066ff;
+    text-decoration: none;
+}
+
+p a:hover {
+    text-decoration: underline;
 }
