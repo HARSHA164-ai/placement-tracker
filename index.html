@@ -1,213 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Placement Tracker</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-  <style>
-    body {
-      background-color: #f4f6f9;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    /* Navbar */
-    .navbar {
-      background-color: #0d47a1;
-      /* dark navy blue */
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .navbar-brand {
-      font-weight: bold;
-      letter-spacing: 0.5px;
-    }
-
-    .nav-link {
-      font-size: 1rem;
-      transition: 0.3s;
-    }
-
-    .nav-link:hover {
-      color: #ffcc00 !important;
-      /* gold highlight */
-    }
-
-    /* Main Section */
-    main {
-      padding: 3rem 2rem;
-      background: #fff;
-      border-radius: 12px;
-      max-width: 950px;
-      margin: 3rem auto;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-    }
-
-    h2 {
-      color: #0d47a1;
-      /* dark blue heading */
-      margin-bottom: 1rem;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    p {
-      line-height: 1.8;
-      font-size: 1.1rem;
-      color: #333;
-    }
-
-    /* Buttons */
-    .btn-primary,
-    .btn-success {
-      border-radius: 6px;
-      font-weight: 600;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .btn-primary:hover,
-    .btn-success:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Modal */
-    .modal-content {
-      border-radius: 10px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-header {
-      background: #0d47a1;
-      color: #fff;
-      border-top-left-radius: 10px;
-      border-top-right-radius: 10px;
-    }
-
-    .form-control {
-      border-radius: 8px;
-    }
-
-
-    /* Animation */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  </style>
+  <title>Placement Tracker - Login/Register</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-
-<body>
-  <!-- Loader -->
-  <div id="loader" style="
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255,255,255,0.9);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-  display: none;
-">
-    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
-
+<body class="bg-light">
 
   <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="#">Placement Tracker</a>
-      <div class="collapse navbar-collapse justify-content-end">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#loginModal">Login</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#registerModal">Register</a>
-          </li>
-        </ul>
-      </div>
-    </div>
+  <nav class="navbar">
+    <div class="logo">Placement Tracker</div>
   </nav>
 
-  <!-- Login Modal -->
-  <div class="modal fade" id="loginModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Login</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input type="email" id="loginEmail" class="form-control mb-2" placeholder="Email">
-          <input type="password" id="loginPassword" class="form-control mb-2" placeholder="Password">
-          <button class="btn btn-primary w-100 mb-2" onclick="login()">Login</button>
-        </div>
-      </div>
+  <!-- Login/Register Form -->
+  <div class="form-container">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+
+    <p>Don’t have an account? <a href="#" onclick="toggleRegister()">Register</a></p>
+
+    <div id="registerForm" style="display:none;">
+      <h2>Register</h2>
+      <input type="text" id="registerName" placeholder="Full Name">
+      <input type="email" id="registerEmail" placeholder="Email">
+      <input type="password" id="registerPassword" placeholder="Password">
+      <select id="registerRole">
+        <option value="student">Student</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="register()">Register</button>
     </div>
   </div>
 
-  <!-- Register Modal -->
-  <div class="modal fade" id="registerModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Register</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input type="text" id="registerName" class="form-control mb-2" placeholder="Full Name">
-          <input type="email" id="registerEmail" class="form-control mb-2" placeholder="Email">
-          <input type="password" id="registerPassword" class="form-control mb-2" placeholder="Password">
-          <select id="registerRole" class="form-control mb-2">
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-          </select>
-          <button class="btn btn-success w-100 mb-2" onclick="register()">Register</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"></script>
 
-  <main>
-    <h2>Placement Tracker</h2>
-    <p>
-      The Placement Tracker enables students to stay informed about upcoming drives, shortlisted candidates, and overall
-      placement statistics. We believe in creating a transparent, supportive, and empowering system to help every
-      student achieve career excellence.
-    </p>
-    <p>
-      Explore placement reports, connect with our placement team, and take confident steps toward building a bright
-      professional future.
-    </p>
-  </main>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
-  <!-- Your Config + Auth -->
-  <script src="firebase-config.js"></script>
-  <script src="auth.js"></script>
-
-  <!-- Bootstrap -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
 </body>
-
 </html>

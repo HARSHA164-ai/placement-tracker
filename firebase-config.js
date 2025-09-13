@@ -10,9 +10,7 @@ const firebaseConfig = {
   measurementId: "G-P42W7Y2NGC"
 };
 
-// Init Firebase
-firebase.initializeApp(firebaseConfig);
-
-// Global references
+// Initialize Firebase
+const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
