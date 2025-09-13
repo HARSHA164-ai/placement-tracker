@@ -1,28 +1,27 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
-  <nav class="navbar">
-    <div class="logo">Student Dashboard</div>
-    <button onclick="logout()">Logout</button>
-  </nav>
-
-  <div class="container">
-    <h2>Upcoming Companies</h2>
-    <div id="companyList"></div>
-  </div>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js"></script>
-
-  <script src="js/firebase-config.js"></script>
-  <script src="js/student.js"></script>
+  <header>
+    <h2>Student Dashboard</h2>
+    <button id="logoutBtn">Logout</button>
+  </header>
+  <main>
+    <section class="card">
+      <h3>Available Companies</h3>
+      <div id="companiesList"></div>
+    </section>
+    <section class="card">
+      <h3>My Applications</h3>
+      <div id="applicationsList"></div>
+    </section>
+  </main>
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="student.js"></script>
 </body>
 </html>

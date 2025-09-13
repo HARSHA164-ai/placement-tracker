@@ -1,51 +1,40 @@
-// Toggle Register Form
-function toggleRegister() {
-  document.getElementById("registerForm").style.display =
-    document.getElementById("registerForm").style.display === "none" ? "block" : "none";
-}
+import { auth, db } from './firebase-config.js';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+import { doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 // Register
-function register() {
-  const name = document.getElementById("registerName").value;
-  const email = document.getElementById("registerEmail").value;
-  const password = document.getElementById("registerPassword").value;
-  const role = document.getElementById("registerRole").value;
-
-  auth.createUserWithEmailAndPassword(email, password)
-    .then(userCred => {
-      return db.collection("users").doc(userCred.user.uid).set({
-        name, email, role
-      });
-    })
-    .then(() => alert("Registered Successfully!"))
-    .catch(err => alert(err.message));
+const regForm = document.getElementById('registerForm');
+if (regForm) {
+  regForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const pass = document.getElementById('regPass').value;
+    const role = document.getElementById('regRole').value;
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+      await setDoc(doc(db, 'users', userCred.user.uid), { name, email, role });
+      alert('Account created! Please login.');
+    } catch(err) { alert(err.message); }
+  });
 }
 
-// Login
-function login() {
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+//login
 
-  auth.signInWithEmailAndPassword(email, password)
-    .then(userCred => {
-      return db.collection("users").doc(userCred.user.uid).get();
-    })
-    .then(doc => {
-      if (doc.exists) {
-        const role = doc.data().role;
-        if (role === "student") {
-          window.location.href = "student.html";
-        } else {
-          window.location.href = "admin.html";
-        }
+const loginForm = document.getElementById('loginForm');
+if (loginForm) {
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPass').value;
+    try {
+      const userCred = await signInWithEmailAndPassword(auth, email, pass);
+      const userDoc = await getDoc(doc(db, 'users', userCred.user.uid));
+      if(userDoc.exists()) {
+        const role = userDoc.data().role;
+        if (role === 'admin') window.location.href = 'admin.html';
+        else window.location.href = 'student.html';
       }
-    })
-    .catch(err => alert(err.message));
-}
-
-// Logout
-function logout() {
-  auth.signOut().then(() => {
-    window.location.href = "index.html";
+    } catch(err) { alert(err.message); }
   });
 }
