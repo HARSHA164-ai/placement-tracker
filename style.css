@@ -24,16 +24,17 @@ header h2 {
 }
 
 header #logoutBtn {
+    align-items: left;
     background: #fff;
     color: #0066ff;
     font-size: 14px;
-    width: 10px;
+    width: 25px;
     padding: 8px 16px;
     border-radius: 20px;
     border: none;
     cursor: pointer;
     transition: 0.3s;
-    order: -1; /* Ensure button comes first on the left */
+    /*order: -1;  Ensure button comes first on the left */
 }
 
 header #logoutBtn:hover {
