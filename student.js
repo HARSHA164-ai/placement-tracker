@@ -3,7 +3,7 @@ import { signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth
 import { collection, addDoc, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
+if (logoutBtn) logoutBtn.addEventListener('click', () => window.location.href = 'index.html');
 
 // List companies
 const companiesList = document.getElementById('companiesList');
