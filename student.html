@@ -45,8 +45,7 @@
     <div class="container-fluid">
       <span class="navbar-brand">🎓 Placement Tracker - Student Dashboard</span>
       <div>
-        <button class="btn btn-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit
-          Profile</button>
+        <button class="btn btn-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit Profile</button>
         <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
       </div>
     </div>
@@ -123,12 +122,12 @@
 
     // Firebase Config
     const firebaseConfig = {
-      apiKey: "AIzaSyDgekQbFWteKgJqEJMVNbesd06LFRfv00U",
-      authDomain: "my-one-dbc60.firebaseapp.com",
-      projectId: "my-one-dbc60",
-      storageBucket: "my-one-dbc60.firebasestorage.app",
-      messagingSenderId: "878020879440",
-      appId: "1:878020879440:web:9e726d0aa0f7dd93231d55"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
     };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -210,10 +209,8 @@
     }
 
     // Auth
-    // Auth
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Fetch from USERS collection (since you stored there at registration)
         const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
@@ -225,8 +222,7 @@
           document.getElementById('profileRoll').innerText = data.rollNo || "";
           document.getElementById('profileSkills').innerText = data.skills ? data.skills.join(", ") : "";
         } else {
-          // fallback if Firestore profile not found
-          document.getElementById('profileName').innerText = user.email.split("@")[0]; // at least username
+          document.getElementById('profileName').innerText = user.email.split("@")[0];
           document.getElementById('profileEmail').innerText = user.email || "";
         }
 
@@ -237,7 +233,6 @@
       }
     });
 
-
     // Save Profile
     document.getElementById('saveProfileBtn').addEventListener('click', async () => {
       const branch = document.getElementById("editBranch").value;
@@ -245,7 +240,8 @@
       const skills = document.getElementById("editSkills").value.split(",").map(s => s.trim());
       const user = auth.currentUser;
       if (!user) return;
-      await setDoc(doc(db, "student", user.uid), { branch, rollNo, skills }, { merge: true });
+
+      await setDoc(doc(db, "users", user.uid), { branch, rollNo, skills }, { merge: true });
       document.getElementById("profileBranch").innerText = branch;
       document.getElementById("profileRoll").innerText = rollNo;
       document.getElementById("profileSkills").innerText = skills.join(", ");
