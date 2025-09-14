@@ -167,22 +167,15 @@
     function attachApplyActions(userId) {
       document.querySelectorAll('.applyBtn').forEach(btn => {
         btn.addEventListener('click', async () => {
-          // 🔹 Fetch company details before applying
           const companyRef = doc(db, 'companies', btn.dataset.id);
           const companySnap = await getDoc(companyRef);
-
-          if (!companySnap.exists()) {
-            alert("Company not found!");
-            return;
-          }
+          if (!companySnap.exists()) return;
           const c = companySnap.data();
 
-          // 🔹 Fetch student details
           const userRef = doc(db, 'users', userId);
           const userSnap = await getDoc(userRef);
           const u = userSnap.exists() ? userSnap.data() : {};
 
-          // 🔹 Save complete application data
           await addDoc(collection(db, 'applications'), {
             user: userId,
             userName: u.name || "",
@@ -200,7 +193,6 @@
       });
     }
 
-
     // Status Badge
     function getStatusBadge(status) {
       let color = 'gray';
@@ -216,20 +208,19 @@
     const applicationsList = document.getElementById('applicationsList');
     function renderApplications(userId) {
       const q = query(collection(db, 'applications'), where('user', '==', userId));
-      onSnapshot(q, async (snapshot) => {
+      onSnapshot(q, (snapshot) => {
         applicationsList.innerHTML = '<table class="app-table"><thead><tr><th>Company</th><th>Role</th><th>CTC</th><th>Status</th></tr></thead><tbody></tbody></table>';
         const tbody = applicationsList.querySelector('tbody');
-        for (const docSnap of snapshot.docs) {
+        snapshot.forEach(docSnap => {
           const data = docSnap.data();
-          let cData = { name: data.company, role: '', ctc: '' };
-          try {
-            const companyDoc = await getDoc(doc(db, 'companies', data.company));
-            if (companyDoc.exists()) cData = companyDoc.data();
-          } catch (e) { console.error(e); }
           const row = document.createElement('tr');
-          row.innerHTML = `<td>${cData.name}</td><td>${cData.role}</td><td>${cData.ctc}</td><td>${getStatusBadge(data.status)}</td>`;
+          row.innerHTML = `
+            <td>${data.companyName || "-"}</td>
+            <td>${data.role || "-"}</td>
+            <td>${data.ctc || "-"}</td>
+            <td>${getStatusBadge(data.status)}</td>`;
           tbody.appendChild(row);
-        }
+        });
       });
     }
 

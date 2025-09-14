@@ -1,4 +1,4 @@
-import { auth, db } from './firebase-config.js';
+/*import { auth, db } from './firebase-config.js';
 import { signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import { collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
@@ -194,3 +194,4 @@ async function loadApplications() {
 }
 
 loadApplications();
+*/
