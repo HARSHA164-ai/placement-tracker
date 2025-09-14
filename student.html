@@ -167,15 +167,39 @@
     function attachApplyActions(userId) {
       document.querySelectorAll('.applyBtn').forEach(btn => {
         btn.addEventListener('click', async () => {
+          // 🔹 Fetch company details before applying
+          const companyRef = doc(db, 'companies', btn.dataset.id);
+          const companySnap = await getDoc(companyRef);
+
+          if (!companySnap.exists()) {
+            alert("Company not found!");
+            return;
+          }
+          const c = companySnap.data();
+
+          // 🔹 Fetch student details
+          const userRef = doc(db, 'users', userId);
+          const userSnap = await getDoc(userRef);
+          const u = userSnap.exists() ? userSnap.data() : {};
+
+          // 🔹 Save complete application data
           await addDoc(collection(db, 'applications'), {
             user: userId,
+            userName: u.name || "",
+            userEmail: u.email || "",
             company: btn.dataset.id,
-            status: 'applied'
+            companyName: c.name || "",
+            role: c.role || "",
+            ctc: c.ctc || "",
+            status: 'applied',
+            appliedAt: new Date()
           });
-          alert('Application submitted!');
+
+          alert('✅ Application submitted!');
         });
       });
     }
+
 
     // Status Badge
     function getStatusBadge(status) {
