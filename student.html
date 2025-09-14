@@ -1,27 +1,317 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Student Dashboard</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>Student Dashboard - Placement Tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f8f9fa; }
+    .card-shadow { box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
+    .company-card { min-height: 200px; display: flex; flex-direction: column; }
+  </style>
 </head>
 <body>
-  <header>
-    <h2>Student Dashboard</h2>
-    <button id="logoutBtn">Logout</button>
-  </header>
-  <main>
-    <section class="card">
-      <h3>Available Companies</h3>
-      <div id="companiesList"></div>
-    </section>
-    <section class="card">
-      <h3>My Applications</h3>
-      <div id="applicationsList"></div>
-    </section>
-  </main>
-  <script type="module" src="firebase-config.js"></script>
-  <script type="module" src="student.js"></script>
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <span class="navbar-brand">🎓 Placement Tracker - Student Dashboard</span>
+      <div>
+        <button class="btn btn-secondary btn-sm me-2" id="profileBtn" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit Profile</button>
+        <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <!-- Profile Section -->
+    <div class="row">
+      <div class="col-lg-4">
+        <div class="card card-shadow p-4">
+          <h4>My Profile</h4>
+          <hr>
+          <p><strong>Name:</strong> <span id="profileName"></span></p>
+          <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+          <p><strong>Branch:</strong> <span id="profileBranch"></span></p>
+          <p><strong>Roll No:</strong> <span id="profileRoll"></span></p>
+          <p><strong>Skills:</strong> <span id="profileSkills"></span></p>
+        </div>
+      </div>
+
+      <div class="col-lg-8">
+        <!-- Available Companies Section -->
+        <div class="card card-shadow p-3 mb-4">
+          <h4 class="mb-3">🏢 Available Companies</h4>
+          <div class="row" id="companyList"></div>
+        </div>
+
+        <!-- Student Applications Section -->
+        <div class="card card-shadow p-3">
+          <h4 class="mb-3">📩 My Applications</h4>
+          <div class="table-responsive">
+            <table class="table table-bordered mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Company</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Applied At</th>
+                </tr>
+              </thead>
+              <tbody id="applicationsTable">
+                <tr><td colspan="4" class="text-center">Loading applications...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔹 Bootstrap Modal for Edit Profile -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editProfileLabel">Edit Profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2">
+            <label class="form-label">Branch</label>
+            <input type="text" id="editBranch" class="form-control">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Roll No</label>
+            <input type="text" id="editRollNo" class="form-control">
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Skills (comma separated)</label>
+            <input type="text" id="editSkills" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-success" onclick="updateProfile()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase (compat libs used as original) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- Your firebase-config.js should initialize firebase and export `db` as firestore reference (or set global db variable) -->
+  <script src="firebase-config.js"></script>
+
+  <script>
+    // Make sure firebase-config.js sets `db = firebase.firestore();` and firebase initialized.
+    // Auth state check
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        // load everything for this user
+        loadStudentProfile(user.uid);
+        loadCompanies(user.uid);
+        loadApplications(user.uid);
+      }
+    });
+
+    // Load Student Profile
+    function loadStudentProfile(studentId) {
+      db.collection("student").doc(studentId).get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          document.getElementById("profileName").innerText = data.name || "";
+          document.getElementById("profileEmail").innerText = data.email || "";
+          document.getElementById("profileBranch").innerText = data.branch || "";
+          document.getElementById("profileRoll").innerText = data.rollNo || "";
+          document.getElementById("profileSkills").innerText = data.skills ? data.skills.join(", ") : "";
+
+          // Pre-fill modal
+          document.getElementById("editBranch").value = data.branch || "";
+          document.getElementById("editRollNo").value = data.rollNo || "";
+          document.getElementById("editSkills").value = data.skills ? data.skills.join(", ") : "";
+        } else {
+          // If no doc, you might want to create minimal profile doc
+          console.warn("No profile doc for user:", studentId);
+        }
+      }).catch(err => {
+        console.error(err);
+        alert("Error loading profile: " + err.message);
+      });
+    }
+
+    // Update Profile
+    function updateProfile() {
+      const branch = document.getElementById("editBranch").value;
+      const rollNo = document.getElementById("editRollNo").value;
+      const skillsRaw = document.getElementById("editSkills").value;
+      const skills = skillsRaw ? skillsRaw.split(",").map(s => s.trim()).filter(s => s) : [];
+
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("You must be logged in.");
+
+      db.collection("student").doc(user.uid).set({
+        branch, rollNo, skills
+      }, { merge: true }).then(() => {
+        // Update UI
+        document.getElementById("profileBranch").innerText = branch;
+        document.getElementById("profileRoll").innerText = rollNo;
+        document.getElementById("profileSkills").innerText = skills.join(", ");
+        // close modal via Bootstrap API (optional)
+        const modalEl = document.getElementById('editProfileModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        alert("✅ Profile updated!");
+      }).catch(err => {
+        console.error(err);
+        alert("Error updating profile: " + err.message);
+      });
+    }
+
+    // Load Companies
+    function loadCompanies() {
+      const companyList = document.getElementById("companyList");
+      companyList.innerHTML = ""; // clear
+
+      db.collection("companies").orderBy("name").get().then(snapshot => {
+        if (snapshot.empty) {
+          companyList.innerHTML = `<div class="text-center my-4">No companies available right now.</div>`;
+          return;
+        }
+
+        snapshot.forEach(doc => {
+          const company = doc.data();
+          const col = document.createElement("div");
+          col.className = "col-sm-6 col-md-4 mb-4";
+          col.innerHTML = `
+            <div class="card company-card card-shadow h-100">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">${escapeHtml(company.name || "Unnamed")}</h5>
+                <p class="card-text">
+                  <strong>Role:</strong> ${escapeHtml(company.role || "")} <br>
+                  <strong>Package:</strong> ${escapeHtml(company.package || "")}
+                </p>
+                <div class="mt-auto">
+                  <button class="btn btn-primary w-100" onclick="applyJob('${doc.id}')">Apply Now</button>
+                </div>
+              </div>
+            </div>
+          `;
+          companyList.appendChild(col);
+        });
+      }).catch(err => {
+        console.error(err);
+        companyList.innerHTML = `<div class="text-danger">Error loading companies: ${err.message}</div>`;
+      });
+    }
+
+    // Simple helper to avoid XSS when injecting text
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    // Apply to Company
+    function applyJob(companyId) {
+      const user = firebase.auth().currentUser;
+      if (!user) return alert("You must be logged in!");
+
+      db.collection("applications").add({
+        companyId,
+        studentId: user.uid,
+        status: "Pending",
+        appliedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        alert("✅ Application submitted successfully!");
+      }).catch(err => {
+        console.error(err);
+        alert("Error applying: " + err.message);
+      });
+    }
+
+    // Load Student Applications
+    function loadApplications(studentId) {
+      const appsTable = document.getElementById("applicationsTable");
+      appsTable.innerHTML = `<tr><td colspan="4" class="text-center">Loading applications...</td></tr>`;
+
+      db.collection("applications")
+        .where("studentId", "==", studentId)
+        .orderBy("appliedAt", "desc")
+        .onSnapshot(async (snapshot) => {
+          if (snapshot.empty) {
+            appsTable.innerHTML = `<tr><td colspan="4" class="text-center">No applications yet.</td></tr>`;
+            return;
+          }
+
+          appsTable.innerHTML = "";
+          for (const appDoc of snapshot.docs) {
+            const app = appDoc.data();
+            // fetch company name & role (if exists)
+            let companyName = "Unknown";
+            let companyRole = "";
+            try {
+              const companyDoc = await db.collection("companies").doc(app.companyId).get();
+              if (companyDoc.exists) {
+                const comp = companyDoc.data();
+                companyName = comp.name || companyName;
+                companyRole = comp.role || "";
+              }
+            } catch (e) {
+              console.warn("Error fetching company:", e);
+            }
+
+            // appliedAt may be null if serverTimestamp hasn't resolved yet
+            let appliedAtStr = "—";
+            try {
+              if (app.appliedAt && app.appliedAt.toDate) {
+                appliedAtStr = app.appliedAt.toDate().toLocaleString();
+              }
+            } catch (e) {}
+
+            // status badge class
+            const status = app.status || "Pending";
+            let badgeClass = "bg-secondary text-light";
+            if (status === "Pending") badgeClass = "bg-warning text-dark";
+            else if (status === "Shortlisted") badgeClass = "bg-info text-dark";
+            else if (status === "Selected" || status === "Accepted") badgeClass = "bg-success";
+
+            appsTable.innerHTML += `
+              <tr>
+                <td>${escapeHtml(companyName)}</td>
+                <td>${escapeHtml(companyRole)}</td>
+                <td><span class="badge ${badgeClass}">${escapeHtml(status)}</span></td>
+                <td>${escapeHtml(appliedAtStr)}</td>
+              </tr>
+            `;
+          }
+        }, err => {
+          console.error(err);
+          appsTable.innerHTML = `<tr><td colspan="4" class="text-danger">Error loading applications: ${err.message}</td></tr>`;
+        });
+    }
+
+    // Logout
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "index.html";
+      }).catch(err => {
+        console.error(err);
+        alert("Error signing out: " + err.message);
+      });
+    }
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
