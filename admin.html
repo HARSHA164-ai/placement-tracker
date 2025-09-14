@@ -1,318 +1,212 @@
-<!doctype html>
-<html lang="en">
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+  import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+  import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Placement Tracker - Admin Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <style>
-    body {
-      background: #f8f9fa;
-    }
+  // Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDgekQbFWteKgJqEJMVNbesd06LFRfv00U",
+    authDomain: "my-one-dbc60.firebaseapp.com",
+    projectId: "my-one-dbc60",
+    storageBucket: "my-one-dbc60.firebasestorage.app",
+    messagingSenderId: "878020879440",
+    appId: "1:878020879440:web:9e726d0aa0f7dd93231d55"
+  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-    .sidebar {
-      height: 100vh;
-      width: 240px;
-      position: fixed;
-      top: 0;
-      left: 0;
-      background: #212529;
-      color: #fff;
-      padding-top: 20px;
-    }
+  // Logout
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await signOut(auth);
+    window.location.href = 'index.html';
+  });
 
-    .sidebar h4 {
-      color: #0d6efd;
-      padding-left: 15px;
-    }
-
-    .sidebar a {
-      display: block;
-      padding: 12px 20px;
-      color: #ddd;
-      text-decoration: none;
-      transition: 0.3s;
-    }
-
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #0d6efd;
-      color: #fff;
-    }
-
-    .content {
-      margin-left: 240px;
-      padding: 20px;
-    }
-
-    .card-shadow {
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    }
-
-    .section {
-      display: none;
-    }
-
-    .section.active {
-      display: block;
-    }
-  </style>
-</head>
-
-<body>
-
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h4 class="mb-4 px-3">🎓 Admin</h4>
-    <a href="#" class="nav-link active" data-section="companies">🏢 Companies</a>
-    <a href="#" class="nav-link" data-section="users">👤 Users</a>
-    <a href="#" class="nav-link" data-section="applications">📩 Applications</a>
-    <hr class="bg-light" />
-    <button id="logoutBtn" class="btn btn-danger btn-sm ms-3">Logout</button>
-  </div>
-
-  <!-- Content -->
-  <div class="content">
-    <!-- Companies Section -->
-    <div id="companies" class="section active">
-      <div class="card card-shadow p-3 mb-4">
-        <h4>🏢 Manage Companies</h4>
-        <form id="companyForm" class="row g-2 mb-3">
-          <div class="col-md-4"><input type="text" id="companyName" class="form-control" placeholder="Company Name"
-              required /></div>
-          <div class="col-md-4"><input type="text" id="companyRole" class="form-control" placeholder="Role" required />
-          </div>
-          <div class="col-md-3"><input type="text" id="companyCTC" class="form-control" placeholder="CTC" /></div>
-          <div class="col-md-1 d-grid"><button type="submit" class="btn btn-primary">➕</button></div>
-        </form>
-        <div id="companiesTable"></div>
-      </div>
-    </div>
-
-    <!-- Users Section -->
-    <div id="users" class="section">
-      <div class="card card-shadow p-3">
-        <h4>👤 Manage Users</h4>
-        <div id="usersTable"></div>
-      </div>
-    </div>
-
-    <!-- Applications Section -->
-    <div id="applications" class="section">
-      <div class="card card-shadow p-3">
-        <h4>📩 Manage Applications</h4>
-        <div id="applicationsTable"></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Firebase + Scripts -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-
-    // 🔹 Firebase Config (same as student.html)
-    const firebaseConfig = {
-      apiKey: "AIzaSyDgekQbFWteKgJqEJMVNbesd06LFRfv00U",
-      authDomain: "my-one-dbc60.firebaseapp.com",
-      projectId: "my-one-dbc60",
-      storageBucket: "my-one-dbc60.firebasestorage.app",
-      messagingSenderId: "878020879440",
-      appId: "1:878020879440:web:9e726d0aa0f7dd93231d55"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // 🔹 Logout
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await signOut(auth);
-      window.location.href = 'index.html';
-    });
-
-    // 🔹 Sidebar Navigation
-    document.querySelectorAll('.nav-link').forEach(link => {
-      link.addEventListener('click', e => {
-        e.preventDefault();
-        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-        const section = link.dataset.section;
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.getElementById(section).classList.add('active');
-      });
-    });
-
-    // 🔹 Add Company
-    const companyForm = document.getElementById('companyForm');
-    companyForm.addEventListener('submit', async (e) => {
+  // Sidebar Navigation
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', e => {
       e.preventDefault();
-      const name = document.getElementById('companyName').value;
-      const role = document.getElementById('companyRole').value;
-      const ctc = document.getElementById('companyCTC').value;
-      await addDoc(collection(db, 'companies'), { name, role, ctc });
-      companyForm.reset();
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      const section = link.dataset.section;
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section).classList.add('active');
     });
+  });
 
-    // 🔹 Render Companies
-    function renderCompanies() {
-      const companiesTable = document.getElementById('companiesTable');
-      onSnapshot(collection(db, 'companies'), (snapshot) => {
-        let html = `
-          <table class="table table-bordered table-sm align-middle">
-            <thead class="table-dark"><tr><th>Name</th><th>Role</th><th>CTC</th><th>Actions</th></tr></thead>
-            <tbody>
-        `;
-        snapshot.forEach(docSnap => {
-          const data = docSnap.data();
-          html += `
-            <tr>
-              <td>${data.name}</td>
-              <td>${data.role}</td>
-              <td>${data.ctc}</td>
-              <td>
-                <button class="btn btn-sm btn-warning editCompany" data-id="${docSnap.id}">Edit</button>
-                <button class="btn btn-sm btn-danger deleteCompany" data-id="${docSnap.id}">Delete</button>
-              </td>
-            </tr>`;
-        });
-        html += `</tbody></table>`;
-        companiesTable.innerHTML = html;
+  // Add Company
+  const companyForm = document.getElementById('companyForm');
+  companyForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('companyName').value;
+    const role = document.getElementById('companyRole').value;
+    const ctc = document.getElementById('companyCTC').value;
+    await addDoc(collection(db, 'companies'), { name, role, ctc });
+    companyForm.reset();
+  });
 
-        document.querySelectorAll('.deleteCompany').forEach(btn =>
-          btn.addEventListener('click', async () => {
-            if (confirm('Delete this company?')) await deleteDoc(doc(db, 'companies', btn.dataset.id));
-          })
-        );
-
-        document.querySelectorAll('.editCompany').forEach(btn =>
-          btn.addEventListener('click', async () => {
-            const companyDoc = doc(db, 'companies', btn.dataset.id);
-            const newName = prompt('New name:');
-            const newRole = prompt('New role:');
-            const newCTC = prompt('New CTC:');
-            if (newName && newRole && newCTC) {
-              await updateDoc(companyDoc, { name: newName, role: newRole, ctc: newCTC });
-            }
-          })
-        );
-      });
-    }
-    renderCompanies();
-
-    // 🔹 Manage Users
-    async function loadUsers() {
-      const usersTable = document.getElementById('usersTable');
-      const usersSnap = await getDocs(collection(db, 'users'));
+  // Render Companies
+  function renderCompanies() {
+    const companiesTable = document.getElementById('companiesTable');
+    onSnapshot(collection(db, 'companies'), (snapshot) => {
       let html = `
         <table class="table table-bordered table-sm align-middle">
-          <thead class="table-dark"><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
-          <tbody>`;
-      usersSnap.forEach(userDoc => {
-        const user = userDoc.data();
+          <thead class="table-dark"><tr><th>Name</th><th>Role</th><th>CTC</th><th>Actions</th></tr></thead>
+          <tbody>
+      `;
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
         html += `
           <tr>
-            <td>${user.name || "-"}</td>
-            <td>${user.email || "-"}</td>
-            <td>${user.role || "-"}</td>
+            <td>${data.name}</td>
+            <td>${data.role}</td>
+            <td>${data.ctc}</td>
             <td>
-              <button class="btn btn-sm btn-primary makeAdmin" data-id="${userDoc.id}">Admin</button>
-              <button class="btn btn-sm btn-secondary makeStudent" data-id="${userDoc.id}">Student</button>
-              <button class="btn btn-sm btn-danger deleteUser" data-id="${userDoc.id}">Delete</button>
+              <button class="btn btn-sm btn-warning editCompany" data-id="${docSnap.id}">Edit</button>
+              <button class="btn btn-sm btn-danger deleteCompany" data-id="${docSnap.id}">Delete</button>
             </td>
           </tr>`;
       });
       html += `</tbody></table>`;
-      usersTable.innerHTML = html;
+      companiesTable.innerHTML = html;
 
-      document.querySelectorAll('.makeAdmin').forEach(btn =>
+      document.querySelectorAll('.deleteCompany').forEach(btn =>
         btn.addEventListener('click', async () => {
-          await updateDoc(doc(db, 'users', btn.dataset.id), { role: 'admin' });
-          loadUsers();
+          if (confirm('Delete this company?')) await deleteDoc(doc(db, 'companies', btn.dataset.id));
         })
       );
-      document.querySelectorAll('.makeStudent').forEach(btn =>
+
+      document.querySelectorAll('.editCompany').forEach(btn =>
         btn.addEventListener('click', async () => {
-          await updateDoc(doc(db, 'users', btn.dataset.id), { role: 'student' });
-          loadUsers();
-        })
-      );
-      document.querySelectorAll('.deleteUser').forEach(btn =>
-        btn.addEventListener('click', async () => {
-          if (confirm('Delete user?')) {
-            await deleteDoc(doc(db, 'users', btn.dataset.id));
-            loadUsers();
+          const companyDoc = doc(db, 'companies', btn.dataset.id);
+          const newName = prompt('New name:');
+          const newRole = prompt('New role:');
+          const newCTC = prompt('New CTC:');
+          if (newName && newRole && newCTC) {
+            await updateDoc(companyDoc, { name: newName, role: newRole, ctc: newCTC });
           }
         })
       );
-    }
-    loadUsers();
+    });
+  }
+  renderCompanies();
 
-    // 🔹 Manage Applications
-    async function loadApplications() {
-      const applicationsTable = document.getElementById('applicationsTable');
-      const appsSnap = await getDocs(collection(db, 'applications'));
+  // Manage Users (with dropdown for role)
+  async function loadUsers() {
+    const usersTable = document.getElementById('usersTable');
+    const usersSnap = await getDocs(collection(db, 'users'));
+    let html = `
+      <table class="table table-bordered table-sm align-middle">
+        <thead class="table-dark"><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody>`;
+    usersSnap.forEach(userDoc => {
+      const user = userDoc.data();
+      html += `
+        <tr>
+          <td>${user.name || "-"}</td>
+          <td>${user.email || "-"}</td>
+          <td>
+            <select class="form-select form-select-sm userRoleSelect" data-id="${userDoc.id}">
+              <option value="student" ${user.role === "student" ? "selected" : ""}>Student</option>
+              <option value="admin" ${user.role === "admin" ? "selected" : ""}>Admin</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-danger deleteUser" data-id="${userDoc.id}">Delete</button>
+          </td>
+        </tr>`;
+    });
+    html += `</tbody></table>`;
+    usersTable.innerHTML = html;
 
-      let html = `
-        <table class="table table-bordered table-sm align-middle">
-          <thead class="table-dark">
-            <tr>
-              <th>User</th>
-              <th>Email</th>
-              <th>Company</th>
-              <th>Role</th>
-              <th>CTC</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
+    document.querySelectorAll('.userRoleSelect').forEach(sel =>
+      sel.addEventListener('change', async () => {
+        await updateDoc(doc(db, 'users', sel.dataset.id), { role: sel.value });
+        loadUsers();
+      })
+    );
 
-      for (const appDoc of appsSnap.docs) {
-        const app = appDoc.data();
+    document.querySelectorAll('.deleteUser').forEach(btn =>
+      btn.addEventListener('click', async () => {
+        if (confirm('Delete user?')) {
+          await deleteDoc(doc(db, 'users', btn.dataset.id));
+          loadUsers();
+        }
+      })
+    );
+  }
+  loadUsers();
 
-        const userName = app.userName || "-";
-        const userEmail = app.userEmail || "-";
-        const companyName = app.companyName || "-";
-        const role = app.role || "-";
-        const ctc = app.ctc || "-";
+  // Manage Applications (with delete)
+  async function loadApplications() {
+    const applicationsTable = document.getElementById('applicationsTable');
+    const appsSnap = await getDocs(collection(db, 'applications'));
 
-        html += `
+    let html = `
+      <table class="table table-bordered table-sm align-middle">
+        <thead class="table-dark">
           <tr>
-            <td>${userName}</td>
-            <td>${userEmail}</td>
-            <td>${companyName}</td>
-            <td>${role}</td>
-            <td>${ctc}</td>
-            <td>
-              <select class="form-select form-select-sm statusSelect" data-id="${appDoc.id}">
-                <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
-                <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
-                <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
-                <option value="selected" ${app.status === 'selected' ? 'selected' : ''}>Selected</option>
-                <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
-              </select>
-            </td>
+            <th>User</th>
+            <th>Email</th>
+            <th>Company</th>
+            <th>Role</th>
+            <th>CTC</th>
+            <th>Status</th>
+            <th>Actions</th>
           </tr>
-        `;
-      }
+        </thead>
+        <tbody>
+    `;
 
-      html += `</tbody></table>`;
-      applicationsTable.innerHTML = html;
+    for (const appDoc of appsSnap.docs) {
+      const app = appDoc.data();
+      const userName = app.userName || "-";
+      const userEmail = app.userEmail || "-";
+      const companyName = app.companyName || "-";
+      const role = app.role || "-";
+      const ctc = app.ctc || "-";
 
-      document.querySelectorAll('.statusSelect').forEach(sel =>
-        sel.addEventListener('change', async () => {
-          await updateDoc(doc(db, 'applications', sel.dataset.id), { status: sel.value });
-          loadApplications();
-        })
-      );
+      html += `
+        <tr>
+          <td>${userName}</td>
+          <td>${userEmail}</td>
+          <td>${companyName}</td>
+          <td>${role}</td>
+          <td>${ctc}</td>
+          <td>
+            <select class="form-select form-select-sm statusSelect" data-id="${appDoc.id}">
+              <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
+              <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
+              <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
+              <option value="selected" ${app.status === 'selected' ? 'selected' : ''}>Selected</option>
+              <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn btn-sm btn-danger deleteApplication" data-id="${appDoc.id}">Delete</button>
+          </td>
+        </tr>
+      `;
     }
 
-    loadApplications();
-  </script>
+    html += `</tbody></table>`;
+    applicationsTable.innerHTML = html;
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    document.querySelectorAll('.statusSelect').forEach(sel =>
+      sel.addEventListener('change', async () => {
+        await updateDoc(doc(db, 'applications', sel.dataset.id), { status: sel.value });
+        loadApplications();
+      })
+    );
 
-</html>
+    document.querySelectorAll('.deleteApplication').forEach(btn =>
+      btn.addEventListener('click', async () => {
+        if (confirm('Delete this application?')) {
+          await deleteDoc(doc(db, 'applications', btn.dataset.id));
+          loadApplications();
+        }
+      })
+    );
+  }
+  loadApplications();
+</script>
