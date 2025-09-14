@@ -115,21 +115,59 @@ async function loadUsers() {
 loadUsers();
 
 // Manage Applications
+// Manage Applications (with user + company details)
 async function loadApplications() {
   const applicationsTable = document.getElementById('applicationsTable');
   const appsSnap = await getDocs(collection(db, 'applications'));
+
   let html = `
     <table class="table table-bordered table-sm align-middle">
-      <thead class="table-dark"><tr><th>User</th><th>Company</th><th>Role</th><th>CTC</th><th>Status</th></tr></thead>
-      <tbody>`;
-  appsSnap.forEach(appDoc => {
+      <thead class="table-dark">
+        <tr>
+          <th>User</th>
+          <th>Email</th>
+          <th>Company</th>
+          <th>Role</th>
+          <th>CTC</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  for (const appDoc of appsSnap.docs) {
     const app = appDoc.data();
+
+    // 🔹 Fetch user details
+    let userName = "-", userEmail = "-";
+    try {
+      const userDoc = await getDoc(doc(db, "users", app.user));
+      if (userDoc.exists()) {
+        const u = userDoc.data();
+        userName = u.name || "-";
+        userEmail = u.email || "-";
+      }
+    } catch (e) { console.error("User fetch error:", e); }
+
+    // 🔹 Fetch company details
+    let companyName = "-", role = "-", ctc = "-";
+    try {
+      const companyDoc = await getDoc(doc(db, "companies", app.company));
+      if (companyDoc.exists()) {
+        const c = companyDoc.data();
+        companyName = c.name || "-";
+        role = c.role || "-";
+        ctc = c.ctc || "-";
+      }
+    } catch (e) { console.error("Company fetch error:", e); }
+
     html += `
       <tr>
-        <td>${app.user}</td>
-        <td>${app.company}</td>
-        <td>${app.role || '-'}</td>
-        <td>${app.ctc || '-'}</td>
+        <td>${userName}</td>
+        <td>${userEmail}</td>
+        <td>${companyName}</td>
+        <td>${role}</td>
+        <td>${ctc}</td>
         <td>
           <select class="form-select form-select-sm statusSelect" data-id="${appDoc.id}">
             <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
@@ -139,11 +177,14 @@ async function loadApplications() {
             <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
           </select>
         </td>
-      </tr>`;
-  });
+      </tr>
+    `;
+  }
+
   html += `</tbody></table>`;
   applicationsTable.innerHTML = html;
 
+  // 🔹 Status change
   document.querySelectorAll('.statusSelect').forEach(sel =>
     sel.addEventListener('change', async () => {
       await updateDoc(doc(db, 'applications', sel.dataset.id), { status: sel.value });
@@ -151,4 +192,5 @@ async function loadApplications() {
     })
   );
 }
+
 loadApplications();
