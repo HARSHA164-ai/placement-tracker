@@ -86,6 +86,20 @@
           <div class="col-md-3"><input type="text" id="companyCTC" class="form-control" placeholder="CTC" /></div>
           <div class="col-md-1 d-grid"><button type="submit" class="btn btn-primary">➕</button></div>
         </form>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <input type="text" id="companySearch" class="form-control"
+              placeholder="🔍 Search by company name or role...">
+          </div>
+          <div class="col-md-4">
+            <select id="roleFilter" class="form-select">
+              <option value="">All Roles</option>
+              <option value="Developer">Developer</option>
+              <option value="Analyst">Analyst</option>
+              <option value="Intern">Intern</option>
+            </select>
+          </div>
+        </div>
         <div id="companiesTable"></div>
       </div>
     </div>
@@ -158,15 +172,28 @@
     // Render Companies
     function renderCompanies() {
       const companiesTable = document.getElementById('companiesTable');
-      onSnapshot(collection(db, 'companies'), (snapshot) => {
+      const searchInput = document.getElementById('companySearch');
+      const roleFilter = document.getElementById('roleFilter');
+
+      function render(snapshot) {
         let html = `
-        <table class="table table-bordered table-sm align-middle">
-          <thead class="table-dark"><tr><th>Name</th><th>Role</th><th>CTC</th><th>Actions</th></tr></thead>
-          <tbody>
-      `;
+      <table class="table table-bordered table-sm align-middle">
+        <thead class="table-dark"><tr><th>Name</th><th>Role</th><th>CTC</th><th>Actions</th></tr></thead>
+        <tbody>
+    `;
+
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
-          html += `
+          const searchText = (searchInput.value || "").toLowerCase();
+          const selectedRole = roleFilter.value;
+
+          // 🔹 Filtering condition
+          if (
+            (data.name.toLowerCase().includes(searchText) ||
+              data.role.toLowerCase().includes(searchText)) &&
+            (selectedRole === "" || data.role === selectedRole)
+          ) {
+            html += `
           <tr>
             <td>${data.name}</td>
             <td>${data.role}</td>
@@ -176,7 +203,9 @@
               <button class="btn btn-sm btn-danger deleteCompany" data-id="${docSnap.id}">Delete</button>
             </td>
           </tr>`;
+          }
         });
+
         html += `</tbody></table>`;
         companiesTable.innerHTML = html;
 
@@ -197,9 +226,17 @@
             }
           })
         );
+      }
+
+      // 🔹 Listen to firestore updates
+      onSnapshot(collection(db, 'companies'), (snapshot) => {
+        render(snapshot);
+        searchInput.addEventListener('input', () => render(snapshot));
+        roleFilter.addEventListener('change', () => render(snapshot));
       });
     }
     renderCompanies();
+
 
     // Manage Users (with dropdown for role)
     async function loadUsers() {
