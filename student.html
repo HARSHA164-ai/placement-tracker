@@ -187,7 +187,7 @@
     onAuthStateChanged(auth, (user) => {
       if(user){
         // Profile details (simple)
-        document.getElementById('profileName').innerText = user.displayName || "";
+        document.getElementById('profileName').innerText = user.name || "";
         document.getElementById('profileEmail').innerText = user.email || "";
         renderCompanies(user.uid);
         renderApplications(user.uid);
