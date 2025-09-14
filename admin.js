@@ -21,14 +21,13 @@ companyForm.addEventListener('submit', async (e) => {
 });
 
 // Render Companies
-const companiesTable = document.getElementById('companiesTable');
 function renderCompanies() {
+  const companiesTable = document.getElementById('companiesTable');
   onSnapshot(collection(db, 'companies'), (snapshot) => {
     let html = `
       <table class="table table-bordered table-sm align-middle">
-        <thead class="table-dark">
-          <tr><th>Name</th><th>Role</th><th>CTC</th><th>Actions</th></tr>
-        </thead><tbody>
+        <thead class="table-dark"><tr><th>Name</th><th>Role</th><th>CTC</th><th>Actions</th></tr></thead>
+        <tbody>
     `;
     snapshot.forEach(docSnap => {
       const data = docSnap.data();
@@ -41,48 +40,40 @@ function renderCompanies() {
             <button class="btn btn-sm btn-warning editCompany" data-id="${docSnap.id}">Edit</button>
             <button class="btn btn-sm btn-danger deleteCompany" data-id="${docSnap.id}">Delete</button>
           </td>
-        </tr>
-      `;
+        </tr>`;
     });
     html += `</tbody></table>`;
     companiesTable.innerHTML = html;
-    attachCompanyActions();
+
+    document.querySelectorAll('.deleteCompany').forEach(btn =>
+      btn.addEventListener('click', async () => {
+        if (confirm('Delete this company?')) await deleteDoc(doc(db, 'companies', btn.dataset.id));
+      })
+    );
+
+    document.querySelectorAll('.editCompany').forEach(btn =>
+      btn.addEventListener('click', async () => {
+        const companyDoc = doc(db, 'companies', btn.dataset.id);
+        const newName = prompt('New name:');
+        const newRole = prompt('New role:');
+        const newCTC = prompt('New CTC:');
+        if (newName && newRole && newCTC) {
+          await updateDoc(companyDoc, { name: newName, role: newRole, ctc: newCTC });
+        }
+      })
+    );
   });
 }
-
-function attachCompanyActions() {
-  document.querySelectorAll('.deleteCompany').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      if (confirm('Delete this company?')) {
-        await deleteDoc(doc(db, 'companies', btn.dataset.id));
-      }
-    });
-  });
-  document.querySelectorAll('.editCompany').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const companyDoc = doc(db, 'companies', btn.dataset.id);
-      const newName = prompt('New name:');
-      const newRole = prompt('New role:');
-      const newCTC = prompt('New CTC:');
-      if (newName && newRole && newCTC) {
-        await updateDoc(companyDoc, { name: newName, role: newRole, ctc: newCTC });
-      }
-    });
-  });
-}
-
 renderCompanies();
 
 // Manage Users
-const usersTable = document.getElementById('usersTable');
 async function loadUsers() {
+  const usersTable = document.getElementById('usersTable');
   const usersSnap = await getDocs(collection(db, 'users'));
   let html = `
     <table class="table table-bordered table-sm align-middle">
-      <thead class="table-dark">
-        <tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th><th>Applications</th></tr>
-      </thead><tbody>
-  `;
+      <thead class="table-dark"><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody>`;
   usersSnap.forEach(userDoc => {
     const user = userDoc.data();
     html += `
@@ -95,87 +86,69 @@ async function loadUsers() {
           <button class="btn btn-sm btn-secondary makeStudent" data-id="${userDoc.id}">Student</button>
           <button class="btn btn-sm btn-danger deleteUser" data-id="${userDoc.id}">Delete</button>
         </td>
-        <td><div id="apps-${userDoc.id}"></div></td>
-      </tr>
-    `;
-    loadApplications(userDoc.id);
+      </tr>`;
   });
   html += `</tbody></table>`;
   usersTable.innerHTML = html;
-  attachUserActions();
-}
 
-function attachUserActions() {
-  document.querySelectorAll('.makeAdmin').forEach(btn => {
+  document.querySelectorAll('.makeAdmin').forEach(btn =>
     btn.addEventListener('click', async () => {
       await updateDoc(doc(db, 'users', btn.dataset.id), { role: 'admin' });
       loadUsers();
-    });
-  });
-  document.querySelectorAll('.makeStudent').forEach(btn => {
+    })
+  );
+  document.querySelectorAll('.makeStudent').forEach(btn =>
     btn.addEventListener('click', async () => {
       await updateDoc(doc(db, 'users', btn.dataset.id), { role: 'student' });
       loadUsers();
-    });
-  });
-  document.querySelectorAll('.deleteUser').forEach(btn => {
+    })
+  );
+  document.querySelectorAll('.deleteUser').forEach(btn =>
     btn.addEventListener('click', async () => {
-      if (confirm('Delete this user?')) {
+      if (confirm('Delete user?')) {
         await deleteDoc(doc(db, 'users', btn.dataset.id));
         loadUsers();
       }
-    });
-  });
+    })
+  );
 }
+loadUsers();
 
-// Applications under each user
-async function loadApplications(userId) {
+// Manage Applications
+async function loadApplications() {
+  const applicationsTable = document.getElementById('applicationsTable');
   const appsSnap = await getDocs(collection(db, 'applications'));
-  let tableHTML = '';
-  if (!appsSnap.empty) {
-    tableHTML += `
-      <table class="table table-sm table-bordered mt-2">
-        <thead class="table-light">
-          <tr><th>Company</th><th>Role</th><th>CTC</th><th>Status</th></tr>
-        </thead><tbody>
-    `;
-    appsSnap.forEach(appDoc => {
-      const app = appDoc.data();
-      if (app.user === userId) {
-        tableHTML += `
-          <tr>
-            <td>${app.company}</td>
-            <td>${app.role}</td>
-            <td>${app.ctc}</td>
-            <td>
-              <select class="form-select form-select-sm statusSelect" data-id="${appDoc.id}">
-                <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
-                <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
-                <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
-                <option value="selected" ${app.status === 'selected' ? 'selected' : ''}>Selected</option>
-                <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
-              </select>
-            </td>
-          </tr>
-        `;
-      }
-    });
-    tableHTML += `</tbody></table>`;
-  } else {
-    tableHTML = `<em>No applications found.</em>`;
-  }
-  document.getElementById(`apps-${userId}`).innerHTML = tableHTML;
-  attachStatusActions();
-}
+  let html = `
+    <table class="table table-bordered table-sm align-middle">
+      <thead class="table-dark"><tr><th>User</th><th>Company</th><th>Role</th><th>CTC</th><th>Status</th></tr></thead>
+      <tbody>`;
+  appsSnap.forEach(appDoc => {
+    const app = appDoc.data();
+    html += `
+      <tr>
+        <td>${app.user}</td>
+        <td>${app.company}</td>
+        <td>${app.role || '-'}</td>
+        <td>${app.ctc || '-'}</td>
+        <td>
+          <select class="form-select form-select-sm statusSelect" data-id="${appDoc.id}">
+            <option value="applied" ${app.status === 'applied' ? 'selected' : ''}>Applied</option>
+            <option value="shortlisted" ${app.status === 'shortlisted' ? 'selected' : ''}>Shortlisted</option>
+            <option value="interview" ${app.status === 'interview' ? 'selected' : ''}>Interview</option>
+            <option value="selected" ${app.status === 'selected' ? 'selected' : ''}>Selected</option>
+            <option value="rejected" ${app.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+          </select>
+        </td>
+      </tr>`;
+  });
+  html += `</tbody></table>`;
+  applicationsTable.innerHTML = html;
 
-function attachStatusActions() {
-  document.querySelectorAll('.statusSelect').forEach(sel => {
+  document.querySelectorAll('.statusSelect').forEach(sel =>
     sel.addEventListener('change', async () => {
       await updateDoc(doc(db, 'applications', sel.dataset.id), { status: sel.value });
-      loadUsers();
-    });
-  });
+      loadApplications();
+    })
+  );
 }
-
-// Initial load
-loadUsers();
+loadApplications();

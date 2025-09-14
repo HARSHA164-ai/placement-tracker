@@ -11,81 +11,117 @@
       background: #f8f9fa;
     }
 
+    .sidebar {
+      height: 100vh;
+      width: 240px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background: #212529;
+      color: #fff;
+      padding-top: 20px;
+    }
+
+    .sidebar h4 {
+      color: #0d6efd;
+      padding-left: 15px;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: #ddd;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: #0d6efd;
+      color: #fff;
+    }
+
+    .content {
+      margin-left: 240px;
+      padding: 20px;
+    }
+
     .card-shadow {
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
     }
 
-    .section-title {
-      border-left: 4px solid #0d6efd;
-      padding-left: 10px;
-      font-weight: 600;
+    .section {
+      display: none;
     }
 
-    header {
-      background: #212529;
-      color: #fff;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    header h2 {
-      margin: 0;
-      font-size: 20px;
-    }
-
-    header button {
-      font-size: 14px;
+    .section.active {
+      display: block;
     }
   </style>
 </head>
 
 <body>
-  <!-- Navbar -->
-  <header>
-    <h2>🎓 Placement Tracker - Admin Dashboard</h2>
-    <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
-  </header>
 
-  <div class="container mt-4">
-    <div class="row g-4">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4 class="mb-4 px-3">🎓 Admin</h4>
+    <a href="#" class="nav-link active" data-section="companies">🏢 Companies</a>
+    <a href="#" class="nav-link" data-section="users">👤 Users</a>
+    <a href="#" class="nav-link" data-section="applications">📩 Applications</a>
+    <hr class="bg-light" />
+    <button id="logoutBtn" class="btn btn-danger btn-sm ms-3">Logout</button>
+  </div>
 
-      <!-- Manage Companies -->
-      <div class="col-lg-6">
-        <div class="card card-shadow p-3">
-          <h4 class="section-title mb-3">🏢 Manage Companies</h4>
-          <form id="companyForm" class="row g-2 mb-3">
-            <div class="col-md-4">
-              <input type="text" id="companyName" class="form-control" placeholder="Company Name" required />
-            </div>
-            <div class="col-md-4">
-              <input type="text" id="companyRole" class="form-control" placeholder="Role" required />
-            </div>
-            <div class="col-md-3">
-              <input type="text" id="companyCTC" class="form-control" placeholder="CTC" />
-            </div>
-            <div class="col-md-1 d-grid">
-              <button type="submit" class="btn btn-primary">➕</button>
-            </div>
-          </form>
-          <div id="companiesTable"></div>
-        </div>
+  <!-- Content -->
+  <div class="content">
+    <!-- Companies Section -->
+    <div id="companies" class="section active">
+      <div class="card card-shadow p-3 mb-4">
+        <h4>🏢 Manage Companies</h4>
+        <form id="companyForm" class="row g-2 mb-3">
+          <div class="col-md-4"><input type="text" id="companyName" class="form-control" placeholder="Company Name"
+              required /></div>
+          <div class="col-md-4"><input type="text" id="companyRole" class="form-control" placeholder="Role" required />
+          </div>
+          <div class="col-md-3"><input type="text" id="companyCTC" class="form-control" placeholder="CTC" /></div>
+          <div class="col-md-1 d-grid"><button type="submit" class="btn btn-primary">➕</button></div>
+        </form>
+        <div id="companiesTable"></div>
       </div>
+    </div>
 
-      <!-- Manage Users -->
-      <div class="col-lg-6">
-        <div class="card card-shadow p-3">
-          <h4 class="section-title mb-3">👤 Manage Users</h4>
-          <div id="usersTable"></div>
-        </div>
+    <!-- Users Section -->
+    <div id="users" class="section">
+      <div class="card card-shadow p-3">
+        <h4>👤 Manage Users</h4>
+        <div id="usersTable"></div>
       </div>
+    </div>
 
+    <!-- Applications Section -->
+    <div id="applications" class="section">
+      <div class="card card-shadow p-3">
+        <h4>📩 Manage Applications</h4>
+        <div id="applicationsTable"></div>
+      </div>
     </div>
   </div>
 
   <script type="module" src="firebase-config.js"></script>
   <script type="module" src="admin.js"></script>
+  <script>
+    // Sidebar Navigation
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+        const section = link.dataset.section;
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(section).classList.add('active');
+      });
+    });
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
