@@ -9,6 +9,9 @@
     body { background: #f8f9fa; }
     .card-shadow { box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
     .company-card { min-height: 200px; display: flex; flex-direction: column; }
+    .app-table { width: 100%; border-collapse: collapse; }
+    .app-table th, .app-table td { border: 1px solid #ddd; padding: 8px; }
+    .app-table th { background: #343a40; color: white; }
   </style>
 </head>
 <body>
@@ -17,15 +20,15 @@
     <div class="container-fluid">
       <span class="navbar-brand">🎓 Placement Tracker - Student Dashboard</span>
       <div>
-        <button class="btn btn-secondary btn-sm me-2" id="profileBtn" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit Profile</button>
-        <button class="btn btn-danger btn-sm" onclick="logout()">Logout</button>
+        <button class="btn btn-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit Profile</button>
+        <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
       </div>
     </div>
   </nav>
 
   <div class="container mt-4">
-    <!-- Profile Section -->
     <div class="row">
+      <!-- Profile -->
       <div class="col-lg-4">
         <div class="card card-shadow p-4">
           <h4>My Profile</h4>
@@ -38,44 +41,28 @@
         </div>
       </div>
 
+      <!-- Right side -->
       <div class="col-lg-8">
-        <!-- Available Companies Section -->
         <div class="card card-shadow p-3 mb-4">
-          <h4 class="mb-3">🏢 Available Companies</h4>
-          <div class="row" id="companyList"></div>
+          <h4>🏢 Available Companies</h4>
+          <div class="row" id="companiesList"></div>
         </div>
 
-        <!-- Student Applications Section -->
         <div class="card card-shadow p-3">
-          <h4 class="mb-3">📩 My Applications</h4>
-          <div class="table-responsive">
-            <table class="table table-bordered mb-0">
-              <thead class="table-dark">
-                <tr>
-                  <th>Company</th>
-                  <th>Role</th>
-                  <th>Status</th>
-                  <th>Applied At</th>
-                </tr>
-              </thead>
-              <tbody id="applicationsTable">
-                <tr><td colspan="4" class="text-center">Loading applications...</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <h4>📩 My Applications</h4>
+          <div id="applicationsList">Loading applications...</div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- 🔹 Bootstrap Modal for Edit Profile -->
-  <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileLabel" aria-hidden="true">
+  <!-- Edit Profile Modal -->
+  <div class="modal fade" id="editProfileModal" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="editProfileLabel">Edit Profile</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title">Edit Profile</h5>
+          <button class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <div class="mb-2">
@@ -93,225 +80,135 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button class="btn btn-success" onclick="updateProfile()">Save Changes</button>
+          <button class="btn btn-success" id="saveProfileBtn">Save Changes</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Firebase (compat libs used as original) -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <!-- Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Your firebase-config.js should initialize firebase and export `db` as firestore reference (or set global db variable) -->
-  <script src="firebase-config.js"></script>
+  <!-- Firebase (modular v9) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-  <script>
-    // Make sure firebase-config.js sets `db = firebase.firestore();` and firebase initialized.
-    // Auth state check
-    firebase.auth().onAuthStateChanged(user => {
-      if (!user) {
-        window.location.href = "index.html";
-      } else {
-        // load everything for this user
-        loadStudentProfile(user.uid);
-        loadCompanies(user.uid);
-        loadApplications(user.uid);
-      }
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDgekQbFWteKgJqEJMVNbesd06LFRfv00U",
+      authDomain: "my-one-dbc60.firebaseapp.com",
+      projectId: "my-one-dbc60",
+      storageBucket: "my-one-dbc60.firebasestorage.app",
+      messagingSenderId: "878020879440",
+      appId: "1:878020879440:web:9e726d0aa0f7dd93231d55"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Logout
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      signOut(auth).then(()=> window.location.href="index.html");
     });
 
-    // Load Student Profile
-    function loadStudentProfile(studentId) {
-      db.collection("student").doc(studentId).get().then(doc => {
-        if (doc.exists) {
-          const data = doc.data();
-          document.getElementById("profileName").innerText = data.name || "";
-          document.getElementById("profileEmail").innerText = data.email || "";
-          document.getElementById("profileBranch").innerText = data.branch || "";
-          document.getElementById("profileRoll").innerText = data.rollNo || "";
-          document.getElementById("profileSkills").innerText = data.skills ? data.skills.join(", ") : "";
-
-          // Pre-fill modal
-          document.getElementById("editBranch").value = data.branch || "";
-          document.getElementById("editRollNo").value = data.rollNo || "";
-          document.getElementById("editSkills").value = data.skills ? data.skills.join(", ") : "";
-        } else {
-          // If no doc, you might want to create minimal profile doc
-          console.warn("No profile doc for user:", studentId);
-        }
-      }).catch(err => {
-        console.error(err);
-        alert("Error loading profile: " + err.message);
-      });
-    }
-
-    // Update Profile
-    function updateProfile() {
-      const branch = document.getElementById("editBranch").value;
-      const rollNo = document.getElementById("editRollNo").value;
-      const skillsRaw = document.getElementById("editSkills").value;
-      const skills = skillsRaw ? skillsRaw.split(",").map(s => s.trim()).filter(s => s) : [];
-
-      const user = firebase.auth().currentUser;
-      if (!user) return alert("You must be logged in.");
-
-      db.collection("student").doc(user.uid).set({
-        branch, rollNo, skills
-      }, { merge: true }).then(() => {
-        // Update UI
-        document.getElementById("profileBranch").innerText = branch;
-        document.getElementById("profileRoll").innerText = rollNo;
-        document.getElementById("profileSkills").innerText = skills.join(", ");
-        // close modal via Bootstrap API (optional)
-        const modalEl = document.getElementById('editProfileModal');
-        const modal = bootstrap.Modal.getInstance(modalEl);
-        if (modal) modal.hide();
-        alert("✅ Profile updated!");
-      }).catch(err => {
-        console.error(err);
-        alert("Error updating profile: " + err.message);
-      });
-    }
-
-    // Load Companies
-    function loadCompanies() {
-      const companyList = document.getElementById("companyList");
-      companyList.innerHTML = ""; // clear
-
-      db.collection("companies").orderBy("name").get().then(snapshot => {
-        if (snapshot.empty) {
-          companyList.innerHTML = `<div class="text-center my-4">No companies available right now.</div>`;
-          return;
-        }
-
-        snapshot.forEach(doc => {
-          const company = doc.data();
-          const col = document.createElement("div");
-          col.className = "col-sm-6 col-md-4 mb-4";
+    // Render Companies
+    const companiesList = document.getElementById('companiesList');
+    function renderCompanies(userId){
+      onSnapshot(collection(db,'companies'), (snapshot) => {
+        companiesList.innerHTML = '';
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          const col = document.createElement('div');
+          col.className = "col-md-4 mb-3";
           col.innerHTML = `
             <div class="card company-card card-shadow h-100">
               <div class="card-body d-flex flex-column">
-                <h5 class="card-title">${escapeHtml(company.name || "Unnamed")}</h5>
-                <p class="card-text">
-                  <strong>Role:</strong> ${escapeHtml(company.role || "")} <br>
-                  <strong>Package:</strong> ${escapeHtml(company.package || "")}
-                </p>
+                <h5>${data.name}</h5>
+                <p><b>Role:</b> ${data.role}<br><b>CTC:</b> ${data.ctc}</p>
                 <div class="mt-auto">
-                  <button class="btn btn-primary w-100" onclick="applyJob('${doc.id}')">Apply Now</button>
+                  <button class="btn btn-primary w-100 applyBtn" data-id="${docSnap.id}">Apply</button>
                 </div>
               </div>
-            </div>
-          `;
-          companyList.appendChild(col);
+            </div>`;
+          companiesList.appendChild(col);
         });
-      }).catch(err => {
-        console.error(err);
-        companyList.innerHTML = `<div class="text-danger">Error loading companies: ${err.message}</div>`;
+        attachApplyActions(userId);
       });
     }
 
-    // Simple helper to avoid XSS when injecting text
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#39;");
-    }
-
-    // Apply to Company
-    function applyJob(companyId) {
-      const user = firebase.auth().currentUser;
-      if (!user) return alert("You must be logged in!");
-
-      db.collection("applications").add({
-        companyId,
-        studentId: user.uid,
-        status: "Pending",
-        appliedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }).then(() => {
-        alert("✅ Application submitted successfully!");
-      }).catch(err => {
-        console.error(err);
-        alert("Error applying: " + err.message);
-      });
-    }
-
-    // Load Student Applications
-    function loadApplications(studentId) {
-      const appsTable = document.getElementById("applicationsTable");
-      appsTable.innerHTML = `<tr><td colspan="4" class="text-center">Loading applications...</td></tr>`;
-
-      db.collection("applications")
-        .where("studentId", "==", studentId)
-        .orderBy("appliedAt", "desc")
-        .onSnapshot(async (snapshot) => {
-          if (snapshot.empty) {
-            appsTable.innerHTML = `<tr><td colspan="4" class="text-center">No applications yet.</td></tr>`;
-            return;
-          }
-
-          appsTable.innerHTML = "";
-          for (const appDoc of snapshot.docs) {
-            const app = appDoc.data();
-            // fetch company name & role (if exists)
-            let companyName = "Unknown";
-            let companyRole = "";
-            try {
-              const companyDoc = await db.collection("companies").doc(app.companyId).get();
-              if (companyDoc.exists) {
-                const comp = companyDoc.data();
-                companyName = comp.name || companyName;
-                companyRole = comp.role || "";
-              }
-            } catch (e) {
-              console.warn("Error fetching company:", e);
-            }
-
-            // appliedAt may be null if serverTimestamp hasn't resolved yet
-            let appliedAtStr = "—";
-            try {
-              if (app.appliedAt && app.appliedAt.toDate) {
-                appliedAtStr = app.appliedAt.toDate().toLocaleString();
-              }
-            } catch (e) {}
-
-            // status badge class
-            const status = app.status || "Pending";
-            let badgeClass = "bg-secondary text-light";
-            if (status === "Pending") badgeClass = "bg-warning text-dark";
-            else if (status === "Shortlisted") badgeClass = "bg-info text-dark";
-            else if (status === "Selected" || status === "Accepted") badgeClass = "bg-success";
-
-            appsTable.innerHTML += `
-              <tr>
-                <td>${escapeHtml(companyName)}</td>
-                <td>${escapeHtml(companyRole)}</td>
-                <td><span class="badge ${badgeClass}">${escapeHtml(status)}</span></td>
-                <td>${escapeHtml(appliedAtStr)}</td>
-              </tr>
-            `;
-          }
-        }, err => {
-          console.error(err);
-          appsTable.innerHTML = `<tr><td colspan="4" class="text-danger">Error loading applications: ${err.message}</td></tr>`;
+    function attachApplyActions(userId){
+      document.querySelectorAll('.applyBtn').forEach(btn => {
+        btn.addEventListener('click', async ()=> {
+          await addDoc(collection(db,'applications'), {
+            user: userId,
+            company: btn.dataset.id,
+            status: 'applied'
+          });
+          alert('Application submitted!');
         });
-    }
-
-    // Logout
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "index.html";
-      }).catch(err => {
-        console.error(err);
-        alert("Error signing out: " + err.message);
       });
     }
+
+    // Status Badge
+    function getStatusBadge(status){
+      let color = 'gray';
+      if(status === 'applied') color = 'blue';
+      else if(status === 'shortlisted') color = 'orange';
+      else if(status === 'interview') color = 'purple';
+      else if(status === 'selected') color = 'green';
+      else if(status === 'rejected') color = 'red';
+      return `<span style="padding:4px 10px; border-radius:12px; color:white; background:${color}; font-size:12px;">${status}</span>`;
+    }
+
+    // Applications
+    const applicationsList = document.getElementById('applicationsList');
+    function renderApplications(userId){
+      const q = query(collection(db,'applications'), where('user','==', userId));
+      onSnapshot(q, async (snapshot) => {
+        applicationsList.innerHTML = '<table class="app-table"><thead><tr><th>Company</th><th>Role</th><th>CTC</th><th>Status</th></tr></thead><tbody></tbody></table>';
+        const tbody = applicationsList.querySelector('tbody');
+        for (const docSnap of snapshot.docs) {
+          const data = docSnap.data();
+          let cData = { name: data.company, role: '', ctc: '' };
+          try {
+            const companyDoc = await getDoc(doc(db, 'companies', data.company));
+            if(companyDoc.exists()) cData = companyDoc.data();
+          } catch (e) { console.error(e); }
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${cData.name}</td><td>${cData.role}</td><td>${cData.ctc}</td><td>${getStatusBadge(data.status)}</td>`;
+          tbody.appendChild(row);
+        }
+      });
+    }
+
+    // Auth
+    onAuthStateChanged(auth, (user) => {
+      if(user){
+        // Profile details (simple)
+        document.getElementById('profileName').innerText = user.displayName || "";
+        document.getElementById('profileEmail').innerText = user.email || "";
+        renderCompanies(user.uid);
+        renderApplications(user.uid);
+      } else {
+        window.location.href="index.html";
+      }
+    });
+
+    // Save Profile
+    document.getElementById('saveProfileBtn').addEventListener('click', async ()=>{
+      const branch = document.getElementById("editBranch").value;
+      const rollNo = document.getElementById("editRollNo").value;
+      const skills = document.getElementById("editSkills").value.split(",").map(s=>s.trim());
+      const user = auth.currentUser;
+      if(!user) return;
+      await setDoc(doc(db,"student",user.uid), { branch, rollNo, skills }, { merge:true });
+      document.getElementById("profileBranch").innerText = branch;
+      document.getElementById("profileRoll").innerText = rollNo;
+      document.getElementById("profileSkills").innerText = skills.join(", ");
+      bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
+    });
   </script>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
