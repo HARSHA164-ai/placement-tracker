@@ -1,26 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Student Dashboard - Placement Tracker</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { background: #f8f9fa; }
-    .card-shadow { box-shadow: 0 4px 10px rgba(0,0,0,0.06); }
-    .company-card { min-height: 200px; display: flex; flex-direction: column; }
-    .app-table { width: 100%; border-collapse: collapse; }
-    .app-table th, .app-table td { border: 1px solid #ddd; padding: 8px; }
-    .app-table th { background: #343a40; color: white; }
+    body {
+      background: #f8f9fa;
+    }
+
+    .card-shadow {
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .company-card {
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .app-table th,
+    .app-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    .app-table th {
+      background: #343a40;
+      color: white;
+    }
   </style>
 </head>
+
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-dark bg-dark">
     <div class="container-fluid">
       <span class="navbar-brand">🎓 Placement Tracker - Student Dashboard</span>
       <div>
-        <button class="btn btn-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit Profile</button>
+        <button class="btn btn-secondary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit
+          Profile</button>
         <button id="logoutBtn" class="btn btn-danger btn-sm">Logout</button>
       </div>
     </div>
@@ -110,13 +136,13 @@
 
     // Logout
     document.getElementById('logoutBtn').addEventListener('click', () => {
-      signOut(auth).then(()=> window.location.href="index.html");
+      signOut(auth).then(() => window.location.href = "index.html");
     });
 
     // Render Companies
     const companiesList = document.getElementById('companiesList');
-    function renderCompanies(userId){
-      onSnapshot(collection(db,'companies'), (snapshot) => {
+    function renderCompanies(userId) {
+      onSnapshot(collection(db, 'companies'), (snapshot) => {
         companiesList.innerHTML = '';
         snapshot.forEach(docSnap => {
           const data = docSnap.data();
@@ -138,10 +164,10 @@
       });
     }
 
-    function attachApplyActions(userId){
+    function attachApplyActions(userId) {
       document.querySelectorAll('.applyBtn').forEach(btn => {
-        btn.addEventListener('click', async ()=> {
-          await addDoc(collection(db,'applications'), {
+        btn.addEventListener('click', async () => {
+          await addDoc(collection(db, 'applications'), {
             user: userId,
             company: btn.dataset.id,
             status: 'applied'
@@ -152,20 +178,20 @@
     }
 
     // Status Badge
-    function getStatusBadge(status){
+    function getStatusBadge(status) {
       let color = 'gray';
-      if(status === 'applied') color = 'blue';
-      else if(status === 'shortlisted') color = 'orange';
-      else if(status === 'interview') color = 'purple';
-      else if(status === 'selected') color = 'green';
-      else if(status === 'rejected') color = 'red';
+      if (status === 'applied') color = 'blue';
+      else if (status === 'shortlisted') color = 'orange';
+      else if (status === 'interview') color = 'purple';
+      else if (status === 'selected') color = 'green';
+      else if (status === 'rejected') color = 'red';
       return `<span style="padding:4px 10px; border-radius:12px; color:white; background:${color}; font-size:12px;">${status}</span>`;
     }
 
     // Applications
     const applicationsList = document.getElementById('applicationsList');
-    function renderApplications(userId){
-      const q = query(collection(db,'applications'), where('user','==', userId));
+    function renderApplications(userId) {
+      const q = query(collection(db, 'applications'), where('user', '==', userId));
       onSnapshot(q, async (snapshot) => {
         applicationsList.innerHTML = '<table class="app-table"><thead><tr><th>Company</th><th>Role</th><th>CTC</th><th>Status</th></tr></thead><tbody></tbody></table>';
         const tbody = applicationsList.querySelector('tbody');
@@ -174,7 +200,7 @@
           let cData = { name: data.company, role: '', ctc: '' };
           try {
             const companyDoc = await getDoc(doc(db, 'companies', data.company));
-            if(companyDoc.exists()) cData = companyDoc.data();
+            if (companyDoc.exists()) cData = companyDoc.data();
           } catch (e) { console.error(e); }
           const row = document.createElement('tr');
           row.innerHTML = `<td>${cData.name}</td><td>${cData.role}</td><td>${cData.ctc}</td><td>${getStatusBadge(data.status)}</td>`;
@@ -184,26 +210,41 @@
     }
 
     // Auth
-    onAuthStateChanged(auth, (user) => {
-      if(user){
-        // Profile details (simple)
-        document.getElementById('profileName').innerText = user.name || "";
-        document.getElementById('profileEmail').innerText = user.email || "";
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Get profile from Firestore (if stored at registration)
+        const docRef = doc(db, "student", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById('profileName').innerText = data.name || user.displayName || "";
+          document.getElementById('profileEmail').innerText = data.email || user.email || "";
+          document.getElementById('profileBranch').innerText = data.branch || "";
+          document.getElementById('profileRoll').innerText = data.rollNo || "";
+          document.getElementById('profileSkills').innerText = data.skills ? data.skills.join(", ") : "";
+        } else {
+          // fallback if Firestore profile not found
+          document.getElementById('profileName').innerText = user.displayName || "";
+          document.getElementById('profileEmail').innerText = user.email || "";
+        }
+
         renderCompanies(user.uid);
         renderApplications(user.uid);
       } else {
-        window.location.href="index.html";
+        window.location.href = "index.html";
       }
     });
 
+
     // Save Profile
-    document.getElementById('saveProfileBtn').addEventListener('click', async ()=>{
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
       const branch = document.getElementById("editBranch").value;
       const rollNo = document.getElementById("editRollNo").value;
-      const skills = document.getElementById("editSkills").value.split(",").map(s=>s.trim());
+      const skills = document.getElementById("editSkills").value.split(",").map(s => s.trim());
       const user = auth.currentUser;
-      if(!user) return;
-      await setDoc(doc(db,"student",user.uid), { branch, rollNo, skills }, { merge:true });
+      if (!user) return;
+      await setDoc(doc(db, "student", user.uid), { branch, rollNo, skills }, { merge: true });
       document.getElementById("profileBranch").innerText = branch;
       document.getElementById("profileRoll").innerText = rollNo;
       document.getElementById("profileSkills").innerText = skills.join(", ");
@@ -211,4 +252,5 @@
     });
   </script>
 </body>
+
 </html>
