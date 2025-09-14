@@ -210,22 +210,23 @@
     }
 
     // Auth
+    // Auth
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Get profile from Firestore (if stored at registration)
-        const docRef = doc(db, "student", user.uid);
+        // Fetch from USERS collection (since you stored there at registration)
+        const docRef = doc(db, "users", user.uid);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
           const data = docSnap.data();
-          document.getElementById('profileName').innerText = data.name || user.displayName || "";
+          document.getElementById('profileName').innerText = data.name || "";
           document.getElementById('profileEmail').innerText = data.email || user.email || "";
           document.getElementById('profileBranch').innerText = data.branch || "";
           document.getElementById('profileRoll').innerText = data.rollNo || "";
           document.getElementById('profileSkills').innerText = data.skills ? data.skills.join(", ") : "";
         } else {
           // fallback if Firestore profile not found
-          document.getElementById('profileName').innerText = user.displayName || "";
+          document.getElementById('profileName').innerText = user.email.split("@")[0]; // at least username
           document.getElementById('profileEmail').innerText = user.email || "";
         }
 
