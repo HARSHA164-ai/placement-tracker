@@ -82,7 +82,6 @@
       color: white;
     }
   </style>
-
 </head>
 
 <body>
@@ -109,7 +108,7 @@
         <p><strong>Roll No:</strong> <span id="profileRoll"></span></p>
         <p><strong>Skills:</strong> <span id="profileSkills"></span></p>
         <p><strong>Phone:</strong> <span id="profilePhone"></span></p>
-        <p><strong>Resume:</strong> <a id="profileResume" href="#" target="_blank">View Resume</a></p>
+        <p><strong>Resume:</strong> <a id="profileResume" href="#" target="_blank">No resume uploaded</a></p>
         <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#editProfileModal">✏️ Edit
           Profile</button>
       </div>
@@ -176,8 +175,8 @@
             <input type="text" id="editPhone" class="form-control">
           </div>
           <div class="mb-2">
-            <label class="form-label">Upload Resume (PDF)</label>
-            <input type="file" id="editResume" class="form-control" accept=".pdf">
+            <label class="form-label">Resume Google Drive Link</label>
+            <input type="url" id="editResumeLink" class="form-control" placeholder="Paste your Google Drive share link">
           </div>
         </div>
         <div class="modal-footer">
@@ -196,7 +195,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
     import { getFirestore, doc, getDoc, setDoc, collection, addDoc, onSnapshot, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDgekQbFWteKgJqEJMVNbesd06LFRfv00U",
@@ -209,7 +207,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const storage = getStorage(app);
 
     // Sidebar navigation
     document.querySelectorAll('.nav-link').forEach(link => {
@@ -373,6 +370,7 @@
           document.getElementById('profilePhone').innerText = data.phone || "";
           if (data.resumeURL) {
             document.getElementById('profileResume').href = data.resumeURL;
+            document.getElementById('profileResume').innerText = "📄 View Resume";
           }
         } else {
           document.getElementById('profileName').innerText = user.email.split("@")[0];
@@ -392,25 +390,25 @@
       const rollNo = document.getElementById("editRollNo").value;
       const skills = document.getElementById("editSkills").value.split(",").map(s => s.trim());
       const phone = document.getElementById("editPhone").value;
-      const resumeFile = document.getElementById("editResume").files[0];
+      const resumeLink = document.getElementById("editResumeLink").value;
       const user = auth.currentUser;
       if (!user) return;
 
-      let resumeURL = null;
-      if (resumeFile) {
-        const storageRef = ref(storage, `resumes/${user.uid}.pdf`);
-        await uploadBytes(storageRef, resumeFile);
-        resumeURL = await getDownloadURL(storageRef);
-      }
-
-      await setDoc(doc(db, "users", user.uid), { branch, rollNo, skills, phone, ...(resumeURL && { resumeURL }) }, { merge: true });
+      await setDoc(doc(db, "users", user.uid), {
+        branch,
+        rollNo,
+        skills,
+        phone,
+        ...(resumeLink && { resumeURL: resumeLink })
+      }, { merge: true });
 
       document.getElementById("profileBranch").innerText = branch;
       document.getElementById("profileRoll").innerText = rollNo;
       document.getElementById("profileSkills").innerText = skills.join(", ");
       document.getElementById("profilePhone").innerText = phone;
-      if (resumeURL) {
-        document.getElementById("profileResume").href = resumeURL;
+      if (resumeLink) {
+        document.getElementById("profileResume").href = resumeLink;
+        document.getElementById("profileResume").innerText = "📄 View Resume";
       }
 
       bootstrap.Modal.getInstance(document.getElementById('editProfileModal')).hide();
