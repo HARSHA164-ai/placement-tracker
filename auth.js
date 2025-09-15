@@ -10,13 +10,20 @@ if (regForm) {
     const name = document.getElementById('regName').value;
     const email = document.getElementById('regEmail').value;
     const pass = document.getElementById('regPass').value;
-    const role = document.getElementById('regRole').value;
+
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-      await setDoc(doc(db, 'users', userCred.user.uid), { name, email, role });
+      // 🔹 Default Role = student
+      await setDoc(doc(db, 'users', userCred.user.uid), { 
+        name, 
+        email, 
+        role: "student" 
+      });
       alert('Account created! Please login.');
       window.location.href = 'index.html';
-    } catch (err) { alert(err.message); }
+    } catch (err) { 
+      alert(err.message); 
+    }
   });
 }
 
