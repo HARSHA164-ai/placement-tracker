@@ -83,7 +83,7 @@
               required /></div>
           <div class="col-md-4"><input type="text" id="companyRole" class="form-control" placeholder="Role" required />
           </div>
-          <div class="col-md-3"><input type="text" id="companyCTC" class="form-control" placeholder="CTC" /></div>
+          <div class="col-md-3"><input type="text" id="companyCTC" class="form-control" placeholder="Package" /></div>
           <div class="col-md-1 d-grid"><button type="submit" class="btn btn-primary">➕</button></div>
         </form>
         <div id="companiesTable"></div>
@@ -191,7 +191,7 @@
       onSnapshot(collection(db, 'companies'), (snapshot) => {
         let html = `
           <table class="table table-bordered table-sm align-middle">
-            <thead class="table-dark"><tr><th>Name</th><th>Role</th><th>CTC</th><th>Actions</th></tr></thead>
+            <thead class="table-dark"><tr><th>Name</th><th>Role</th><th>Package</th><th>Actions</th></tr></thead>
             <tbody>
         `;
         snapshot.forEach(docSnap => {
@@ -221,7 +221,7 @@
             const companyDoc = doc(db, 'companies', btn.dataset.id);
             const newName = prompt('New name:');
             const newRole = prompt('New role:');
-            const newCTC = prompt('New CTC:');
+            const newCTC = prompt('New Package:');
             if (newName && newRole && newCTC) {
               await updateDoc(companyDoc, { name: newName, role: newRole, ctc: newCTC });
             }
